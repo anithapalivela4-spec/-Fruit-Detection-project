@@ -1,0 +1,174 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ disease.disease_name }} | Fruit Disease Detection System{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center flex-wrap mb-4">
+        <div>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-1 small">
+                    <li class="breadcrumb-item"><a href="{% url 'diseases:disease_list' %}">Disease Catalog</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'fruits:fruit_detail' disease.affected_fruit.pk %}">{{ disease.affected_fruit.fruit_name }}</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">{{ disease.disease_name }}</li>
+                </ol>
+            </nav>
+            <h2 class="fw-bolder {% if disease.is_healthy %}text-success{% else %}text-danger-emphasis{% endif %} mb-0">
+                {{ disease.disease_name }}
+            </h2>
+        </div>
+        <div class="d-flex gap-2 mt-2 mt-md-0">
+            {% if user.is_authenticated and user.profile.is_expert %}
+                <a href="{% url 'diseases:disease_update' disease.pk %}" class="btn btn-outline-primary btn-sm">
+                    <i class="fa-solid fa-pen-to-square me-1"></i> Edit Disease
+                </a>
+                {% if user.is_superuser or user.profile.is_admin %}
+                    <a href="{% url 'diseases:disease_delete' disease.pk %}" class="btn btn-outline-danger btn-sm">
+                        <i class="fa-solid fa-trash-can me-1"></i> Delete
+                    </a>
+                {% endif %}
+            {% endif %}
+            <a href="{% url 'detection:detect' %}" class="btn btn-warning text-dark fw-bold btn-sm shadow-sm">
+                <i class="fa-solid fa-camera-retro me-1"></i> Test Specimen
+            </a>
+        </div>
+    </div>
+
+    <!-- Disease Profile Cards -->
+    <div class="row g-4 mb-4">
+        <div class="col-lg-8">
+            <div class="card card-agro p-4 shadow-sm h-100">
+                <h5 class="fw-bold text-success mb-2">Phytopathological Overview</h5>
+                <p class="text-secondary leading-relaxed mb-4">{{ disease.description }}</p>
+
+                <div class="row g-3">
+                    <div class="col-sm-6">
+                        <div class="p-3 bg-light rounded-3">
+                            <strong class="d-block text-dark small">Host Fruit:</strong>
+                            <a href="{% url 'fruits:fruit_detail' disease.affected_fruit.pk %}" class="text-success fw-bold">
+                                {{ disease.affected_fruit.fruit_name }}
+                            </a>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="p-3 bg-light rounded-3">
+                            <strong class="d-block text-dark small">Severity Classification:</strong>
+                            <span class="badge {% if disease.severity == 'high' or disease.severity == 'critical' %}badge-severity-high{% elif disease.severity == 'moderate' %}badge-severity-moderate{% elif disease.severity == 'healthy' %}badge-severity-healthy{% else %}badge-severity-low{% endif %}">
+                                {{ disease.get_severity_display }}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="p-3 bg-light rounded-3">
+                            <strong class="d-block text-dark small">Causative Pathogen:</strong>
+                            <span class="text-dark">{{ disease.pathogen_name|default:"Non-pathogenic / Healthy" }}</span>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="p-3 bg-light rounded-3">
+                            <strong class="d-block text-dark small">Dataset Model Code:</strong>
+                            <code class="text-dark">{{ disease.code_name }}</code>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="p-3 bg-light rounded-3">
+                            <strong class="d-block text-dark small">Favorable Environmental Conditions:</strong>
+                            <span class="text-secondary small">{{ disease.environmental_condition|default:"Standard orchard climate." }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card card-agro p-4 shadow-sm h-100 text-center bg-light">
+                <i class="fa-solid {% if disease.is_healthy %}fa-heart text-success{% else %}fa-biohazard text-danger{% endif %} fa-4x mb-3"></i>
+                <h4 class="fw-bold">{{ disease.disease_name }}</h4>
+                <div class="p-3 bg-white rounded-3 border text-start mb-3 small">
+                    <div><strong>Ontology Class:</strong> <code>:Disease</code></div>
+                    <div class="mt-1"><strong>OWL Individual:</strong> <code>:Disease_{{ disease.disease_name|cut:" " }}</code></div>
+                    <div class="mt-1"><strong>Symptoms Linked:</strong> {{ disease.symptoms.count }}</div>
+                    <div class="mt-1"><strong>Treatments Linked:</strong> {{ disease.treatments.count }}</div>
+                </div>
+                <a href="{% url 'api_ontology' %}?disease={{ disease.disease_name }}" target="_blank" class="btn btn-outline-info w-100 btn-sm mb-2">
+                    <i class="fa-solid fa-code me-1"></i> Query in SPARQL API
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Symptoms, Treatments, and Preventions -->
+    <div class="row g-4 mb-4">
+        <!-- Symptoms -->
+        <div class="col-md-4">
+            <div class="card card-agro h-100 shadow-sm">
+                <div class="card-header card-header-agro py-3">
+                    <h5 class="fw-bold mb-0 text-success">
+                        <i class="fa-solid fa-notes-medical me-2 text-danger"></i> Clinical Symptoms ({{ disease.symptoms.count }})
+                    </h5>
+                </div>
+                <div class="card-body p-3">
+                    <div class="list-group list-group-flush">
+                        {% for s in disease.symptoms.all %}
+                            <div class="list-group-item px-0 py-2">
+                                <strong class="d-block text-dark">{{ s.name }}</strong>
+                                <span class="small text-muted">{{ s.visual_characteristics|default:s.description|truncatewords:10 }}</span>
+                            </div>
+                        {% empty %}
+                            <p class="text-muted small">No symptoms registered (Healthy).</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Treatments -->
+        <div class="col-md-4">
+            <div class="card card-agro h-100 shadow-sm">
+                <div class="card-header card-header-agro py-3">
+                    <h5 class="fw-bold mb-0 text-success">
+                        <i class="fa-solid fa-hand-holding-medical me-2 text-primary"></i> Treatments &amp; Care ({{ disease.treatments.count }})
+                    </h5>
+                </div>
+                <div class="card-body p-3">
+                    <div class="list-group list-group-flush">
+                        {% for t in disease.treatments.all %}
+                            <div class="list-group-item px-0 py-2">
+                                <span class="badge bg-primary-subtle text-primary border mb-1">{{ t.get_category_display }}</span>
+                                <strong class="d-block text-dark">{{ t.title }}</strong>
+                                <span class="small text-muted">{{ t.description|truncatewords:12 }}</span>
+                            </div>
+                        {% empty %}
+                            <p class="text-muted small">Standard irrigation &amp; nutrition.</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Preventions -->
+        <div class="col-md-4">
+            <div class="card card-agro h-100 shadow-sm">
+                <div class="card-header card-header-agro py-3">
+                    <h5 class="fw-bold mb-0 text-success">
+                        <i class="fa-solid fa-shield-halved me-2 text-success"></i> Prevention ({{ disease.preventions.count }})
+                    </h5>
+                </div>
+                <div class="card-body p-3">
+                    <div class="list-group list-group-flush">
+                        {% for p in disease.preventions.all %}
+                            <div class="list-group-item px-0 py-2">
+                                <strong class="d-block text-dark">{{ p.title }}</strong>
+                                <span class="small text-muted">{{ p.description|truncatewords:12 }}</span>
+                            </div>
+                        {% empty %}
+                            <p class="text-muted small">Field sanitation &amp; scouting.</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

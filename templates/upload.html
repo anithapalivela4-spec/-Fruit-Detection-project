@@ -1,0 +1,124 @@
+{% extends 'base.html' %}
+
+{% block title %}Detect Fruit Disease | AI &amp; Ontology Diagnostic Console{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-9">
+            <!-- Header -->
+            <div class="text-center mb-4">
+                <span class="badge bg-success-subtle text-success fw-bold px-3 py-2 rounded-pill mb-2">
+                    <i class="fa-solid fa-microscope me-1"></i> Computer Vision &amp; Semantic Reasoning
+                </span>
+                <h2 class="fw-bolder">Fruit &amp; Leaf Specimen Disease Diagnosis</h2>
+                <p class="text-muted small mx-auto" style="max-width: 600px;">
+                    Upload a high-resolution photograph of the affected leaf, stem, or fruit surface. The neural network will extract morphological lesions, and the ontology engine will infer causative pathogens, clinical severity, and targeted treatments.
+                </p>
+            </div>
+
+            <!-- Upload Form Card -->
+            <div class="card card-agro shadow">
+                <div class="card-header card-header-agro py-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="fw-bold mb-0 text-success">
+                            <i class="fa-solid fa-camera-retro me-2"></i> Specimen Image Upload
+                        </h5>
+                        <span class="small text-muted"><i class="fa-solid fa-circle-info me-1"></i> Supports JPG, JPEG, PNG, WEBP (Max 10MB)</span>
+                    </div>
+                </div>
+
+                <div class="card-body p-4">
+                    <form method="post" enctype="multipart/form-data" id="detection-upload-form">
+                        {% csrf_token %}
+
+                        <!-- Drag and Drop Upload Area -->
+                        <div class="upload-zone mb-4" id="upload-drop-zone">
+                            <!-- Hidden actual file input -->
+                            {{ form.image }}
+
+                            <div class="drop-zone-prompt py-2">
+                                <i class="fa-solid fa-cloud-arrow-up upload-zone-icon"></i>
+                                <h5 class="fw-bold text-dark mb-1">Drag and drop your specimen image here</h5>
+                                <p class="text-muted small mb-3">or click anywhere in this box to browse local storage</p>
+                                <button type="button" class="btn btn-agro btn-sm px-3 shadow-sm">
+                                    <i class="fa-solid fa-folder-open me-1"></i> Browse Files
+                                </button>
+                            </div>
+
+                            <!-- Live Image Preview Area (Hidden by default) -->
+                            <div class="d-none text-center" id="image-preview-area">
+                                <div class="preview-container mb-3 border">
+                                    <img src="#" alt="Specimen Preview" id="preview-img-element" class="preview-image">
+                                </div>
+                                <div>
+                                    <span class="badge bg-dark px-3 py-2 me-2" id="file-info-text">image.jpg</span>
+                                    <button type="button" class="btn btn-danger btn-sm px-3" id="btn-remove-image">
+                                        <i class="fa-solid fa-trash-can me-1"></i> Remove Image
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Environmental Context Accordion (Enhances Ontology Reasoning) -->
+                        <div class="card border border-light-subtle rounded-3 mb-4 bg-light">
+                            <div class="card-body p-3">
+                                <h6 class="fw-bold text-success mb-2 d-flex align-items-center">
+                                    <i class="fa-solid fa-sliders me-2"></i> Optional Agronomic Context (Strengthens Ontology Rules)
+                                </h6>
+                                <p class="small text-muted mb-3">
+                                    Specifying microclimate parameters triggers SWRL inference rules (e.g. High Humidity + Warmth elevates Severity rating).
+                                </p>
+                                <div class="row g-3">
+                                    <div class="col-md-4">
+                                        <label class="form-label small fw-semibold">Target Fruit (Optional Hint)</label>
+                                        {{ form.fruit_hint }}
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label small fw-semibold">Ambient Temperature (°C)</label>
+                                        {{ form.temperature }}
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label small fw-semibold">Relative Humidity (%)</label>
+                                        {{ form.humidity }}
+                                    </div>
+                                    <div class="col-12">
+                                        <label class="form-label small fw-semibold">Field Observation Notes</label>
+                                        {{ form.user_notes }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Actions -->
+                        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                            <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary">
+                                <i class="fa-solid fa-arrow-left me-1"></i> Cancel
+                            </a>
+                            <button type="submit" class="btn btn-warning btn-lg fw-bold px-4 text-dark shadow" id="btn-submit-detection" disabled>
+                                <i class="fa-solid fa-microscope me-2"></i> Detect Disease &amp; Run Ontology
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Helpful Demonstration Guide (Viva Hint) -->
+            <div class="card card-agro bg-white border-start border-success border-4 p-4 mt-4 shadow-sm">
+                <h6 class="fw-bold text-success mb-2">
+                    <i class="fa-solid fa-circle-question me-2"></i> Viva Demonstration Guide:
+                </h6>
+                <p class="small text-muted mb-2">
+                    During external viva examination, you can upload any leaf or fruit photograph (e.g., diseased mango with black anthracnose lesions, orange with citrus canker, or an apple leaf).
+                </p>
+                <div class="small text-secondary">
+                    1. The image is resized to <code>(224, 224, 3)</code> and normalized for neural processing.<br>
+                    2. The model extracts feature probabilities.<br>
+                    3. RDFLib queries the Protégé OWL ontology to retrieve the causal pathogen, clinical symptoms, and multi-category treatment protocols.<br>
+                    4. A structured diagnostic report is generated, complete with download options.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

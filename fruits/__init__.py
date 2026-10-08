@@ -1,0 +1,1 @@
+"""Fruits app package."""

@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+
+{% block title %}Register | Fruit Disease Detection System{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-7">
+            <div class="card card-agro shadow">
+                <div class="card-header card-header-agro text-center py-4">
+                    <i class="fa-solid fa-user-plus text-success fa-2x mb-2"></i>
+                    <h4 class="fw-bold mb-0">Create New Account</h4>
+                    <p class="small text-muted mb-0">Join agricultural disease advisory &amp; diagnosis portal</p>
+                </div>
+                <div class="card-body p-4">
+                    <form method="post" action="{% url 'accounts:register' %}">
+                        {% csrf_token %}
+
+                        {% if form.errors %}
+                            <div class="alert alert-danger">
+                                <strong>Please correct the following errors:</strong>
+                                <ul class="mb-0 mt-1">
+                                    {% for field in form %}
+                                        {% for error in field.errors %}
+                                            <li>{{ field.label }}: {{ error }}</li>
+                                        {% endfor %}
+                                    {% endfor %}
+                                    {% for error in form.non_field_errors %}
+                                        <li>{{ error }}</li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        {% endif %}
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Username *</label>
+                                {{ form.username }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Email Address *</label>
+                                {{ form.email }}
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">First Name</label>
+                                {{ form.first_name }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Last Name</label>
+                                {{ form.last_name }}
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">User Role *</label>
+                                {{ form.role }}
+                                <div class="form-text small">Select Farmer, Agricultural Expert, or Administrator</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Phone Number</label>
+                                {{ form.phone }}
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Farm / Orchard Location</label>
+                            {{ form.farm_location }}
+                        </div>
+
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Password *</label>
+                                {{ form.password }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Confirm Password *</label>
+                                {{ form.confirm_password }}
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-agro w-100 py-2 fw-bold">
+                            <i class="fa-solid fa-check me-2"></i> Register Account
+                        </button>
+                    </form>
+
+                    <div class="text-center mt-4 small">
+                        Already have an account? <a href="{% url 'accounts:login' %}" class="fw-bold text-success">Login Here</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

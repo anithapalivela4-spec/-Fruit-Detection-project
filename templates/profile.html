@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+
+{% block title %}User Profile | Fruit Disease Detection System{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card card-agro shadow-sm">
+                <div class="card-header card-header-agro py-3 d-flex justify-content-between align-items-center">
+                    <h5 class="fw-bold mb-0 text-success">
+                        <i class="fa-solid fa-id-badge me-2"></i> User Profile &amp; Settings
+                    </h5>
+                    <span class="badge bg-success">{{ profile.get_role_display }}</span>
+                </div>
+                <div class="card-body p-4">
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">First Name</label>
+                                {{ form.first_name }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Last Name</label>
+                                {{ form.last_name }}
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Email Address</label>
+                                {{ form.email }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Phone Number</label>
+                                {{ form.phone }}
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Role</label>
+                                {{ form.role }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Farm / Station Location</label>
+                                {{ form.farm_location }}
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold">Professional Bio / Orchard Description</label>
+                            {{ form.bio }}
+                        </div>
+
+                        <div class="d-flex justify-content-end gap-2">
+                            <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary">Back to Dashboard</a>
+                            <button type="submit" class="btn btn-agro">Save Profile Changes</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

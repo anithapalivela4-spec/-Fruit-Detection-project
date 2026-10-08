@@ -1,0 +1,1 @@
+"""Diseases app package."""

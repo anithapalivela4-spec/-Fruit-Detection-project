@@ -1,0 +1,211 @@
+/* Fruit Disease Detection System - Master Stylesheet */
+:root {
+    --primary-green: #1b5e20;
+    --accent-green: #2e7d32;
+    --light-green: #e8f5e9;
+    --leaf-gold: #f9a825;
+    --dark-forest: #0d3813;
+    --earth-gray: #f4f6f8;
+    --border-subtle: #e0e0e0;
+}
+
+body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background-color: var(--earth-gray);
+    color: #2c3e50;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+main {
+    flex: 1 0 auto;
+}
+
+/* Navbar */
+.navbar-agro {
+    background: linear-gradient(135deg, #1b5e20 0%, #2e7d32 100%);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+.navbar-agro .nav-link {
+    color: rgba(255, 255, 255, 0.9) !important;
+    font-weight: 500;
+    padding: 0.5rem 0.9rem !important;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+}
+
+.navbar-agro .nav-link:hover,
+.navbar-agro .nav-link.active {
+    color: #ffffff !important;
+    background-color: rgba(255, 255, 255, 0.15);
+}
+
+/* Hero Section */
+.hero-section {
+    background: linear-gradient(rgba(13, 56, 19, 0.88), rgba(27, 94, 32, 0.92)), url('/static/images/hero-bg.jpg') center/cover no-repeat;
+    background-color: #1b5e20;
+    color: white;
+    padding: 5rem 1rem;
+    border-radius: 0 0 2rem 2rem;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+}
+
+.hero-badge {
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    padding: 0.4rem 1rem;
+    border-radius: 50px;
+    font-size: 0.88rem;
+    display: inline-block;
+}
+
+/* Cards */
+.card-agro {
+    border: none;
+    border-radius: 12px;
+    background: #ffffff;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card-agro:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.09);
+}
+
+.card-header-agro {
+    background: var(--light-green);
+    color: var(--dark-forest);
+    font-weight: 600;
+    border-top-left-radius: 12px !important;
+    border-top-right-radius: 12px !important;
+    border-bottom: 1px solid rgba(46, 125, 50, 0.15);
+}
+
+/* Drag and Drop Upload Zone */
+.upload-zone {
+    border: 2px dashed #81c784;
+    border-radius: 16px;
+    background-color: #f9fbf9;
+    padding: 3rem 2rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.25s ease;
+}
+
+.upload-zone:hover, .upload-zone.dragover {
+    border-color: #2e7d32;
+    background-color: #e8f5e9;
+    transform: scale(1.005);
+}
+
+.upload-zone-icon {
+    font-size: 3.5rem;
+    color: #43a047;
+    margin-bottom: 1rem;
+}
+
+.preview-container {
+    max-height: 340px;
+    border-radius: 12px;
+    overflow: hidden;
+    display: inline-block;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.preview-image {
+    max-width: 100%;
+    max-height: 320px;
+    object-fit: cover;
+}
+
+/* Badges */
+.badge-severity-high, .badge-severity-critical {
+    background-color: #d32f2f;
+    color: white;
+}
+.badge-severity-moderate {
+    background-color: #f57c00;
+    color: white;
+}
+.badge-severity-low {
+    background-color: #fbc02d;
+    color: #212121;
+}
+.badge-severity-healthy {
+    background-color: #388e3c;
+    color: white;
+}
+
+/* Workflow step pills */
+.workflow-step {
+    position: relative;
+    padding: 1.5rem 1rem;
+    background: white;
+    border-radius: 12px;
+    border: 1px solid var(--border-subtle);
+    text-align: center;
+}
+
+.step-number {
+    width: 38px;
+    height: 38px;
+    line-height: 38px;
+    background: var(--accent-green);
+    color: white;
+    border-radius: 50%;
+    margin: 0 auto 0.8rem;
+    font-weight: 700;
+}
+
+/* Buttons */
+.btn-agro {
+    background-color: var(--accent-green);
+    border-color: var(--accent-green);
+    color: white;
+    font-weight: 600;
+    padding: 0.6rem 1.4rem;
+    border-radius: 8px;
+    transition: all 0.2s;
+}
+
+.btn-agro:hover {
+    background-color: var(--dark-forest);
+    border-color: var(--dark-forest);
+    color: white;
+    box-shadow: 0 4px 12px rgba(27, 94, 32, 0.3);
+}
+
+.btn-agro-outline {
+    border: 2px solid var(--accent-green);
+    color: var(--accent-green);
+    font-weight: 600;
+    border-radius: 8px;
+    padding: 0.55rem 1.3rem;
+}
+
+.btn-agro-outline:hover {
+    background-color: var(--accent-green);
+    color: white;
+}
+
+/* Footer */
+.footer-agro {
+    background-color: #1b2e1f;
+    color: #b0bec5;
+    padding: 2.5rem 0 1.5rem;
+    border-top: 3px solid #2e7d32;
+}
+
+.footer-agro a {
+    color: #81c784;
+    text-decoration: none;
+}
+
+.footer-agro a:hover {
+    color: #ffffff;
+    text-decoration: underline;
+}

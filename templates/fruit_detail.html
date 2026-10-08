@@ -1,0 +1,158 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ fruit.fruit_name }} | Fruit Disease Detection System{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center flex-wrap mb-4">
+        <div>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-1 small">
+                    <li class="breadcrumb-item"><a href="{% url 'fruits:fruit_list' %}">Fruit Database</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">{{ fruit.fruit_name }}</li>
+                </ol>
+            </nav>
+            <h2 class="fw-bolder text-success mb-0">{{ fruit.fruit_name }} <span class="text-muted fs-4 fst-italic">({{ fruit.scientific_name }})</span></h2>
+        </div>
+        <div class="d-flex gap-2 mt-2 mt-md-0">
+            {% if user.is_authenticated and user.profile.is_expert %}
+                <a href="{% url 'fruits:fruit_update' fruit.pk %}" class="btn btn-outline-primary btn-sm">
+                    <i class="fa-solid fa-pen-to-square me-1"></i> Edit Fruit
+                </a>
+                {% if user.is_superuser or user.profile.is_admin %}
+                    <a href="{% url 'fruits:fruit_delete' fruit.pk %}" class="btn btn-outline-danger btn-sm">
+                        <i class="fa-solid fa-trash-can me-1"></i> Delete
+                    </a>
+                {% endif %}
+            {% endif %}
+            <a href="{% url 'detection:detect' %}" class="btn btn-warning text-dark fw-bold btn-sm shadow-sm">
+                <i class="fa-solid fa-camera-retro me-1"></i> Scan Specimen
+            </a>
+        </div>
+    </div>
+
+    <!-- Overview Details Card -->
+    <div class="row g-4 mb-4">
+        <div class="col-lg-8">
+            <div class="card card-agro p-4 shadow-sm h-100">
+                <h5 class="fw-bold text-success mb-3">Botanical Description &amp; Characteristics</h5>
+                <p class="text-secondary leading-relaxed">{{ fruit.description }}</p>
+
+                <div class="row g-3 mt-2">
+                    <div class="col-sm-6">
+                        <div class="p-3 bg-light rounded-3">
+                            <strong class="d-block text-dark small">Commercial Cultivars / Varieties:</strong>
+                            <span class="text-muted small">{{ fruit.variety }}</span>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="p-3 bg-light rounded-3">
+                            <strong class="d-block text-dark small">Growth Stage Profile:</strong>
+                            <span class="text-muted small">{{ fruit.get_growth_stage_display }}</span>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="p-3 bg-light rounded-3">
+                            <strong class="d-block text-dark small">Optimal Temperature Range:</strong>
+                            <span class="text-muted small">{{ fruit.optimal_temperature }}</span>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="p-3 bg-light rounded-3">
+                            <strong class="d-block text-dark small">Relative Humidity Range:</strong>
+                            <span class="text-muted small">{{ fruit.optimal_humidity }}</span>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="p-3 bg-light rounded-3">
+                            <strong class="d-block text-dark small">Soil &amp; Agronomic Conditions:</strong>
+                            <span class="text-muted small">{{ fruit.soil_type }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card card-agro p-4 shadow-sm h-100 text-center bg-light">
+                <i class="fa-solid fa-apple-whole text-success fa-4x mb-3"></i>
+                <h4 class="fw-bold">{{ fruit.fruit_name }}</h4>
+                <p class="text-muted small">{{ fruit.scientific_name }}</p>
+                <div class="p-3 bg-white rounded-3 border text-start mb-3 small">
+                    <div><strong>Ontology Class:</strong> <code>:Fruit</code></div>
+                    <div class="mt-1"><strong>OWL Individual:</strong> <code>:Fruit_{{ fruit.fruit_name }}</code></div>
+                    <div class="mt-1"><strong>Associated Diseases:</strong> {{ diseases.count }}</div>
+                </div>
+                <a href="{% url 'detection:detect' %}" class="btn btn-agro w-100 fw-bold">
+                    <i class="fa-solid fa-camera-retro me-1"></i> Detect Disease on {{ fruit.fruit_name }}
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Associated Phytopathologies -->
+    <div class="card card-agro shadow-sm mb-4">
+        <div class="card-header card-header-agro py-3 d-flex justify-content-between align-items-center">
+            <h5 class="fw-bold mb-0 text-success">
+                <i class="fa-solid fa-biohazard me-2"></i> Diseases &amp; Pathologies Affecting {{ fruit.fruit_name }} ({{ diseases.count }})
+            </h5>
+            {% if user.is_authenticated and user.profile.is_expert %}
+                <a href="{% url 'diseases:disease_create' %}" class="btn btn-sm btn-agro">
+                    <i class="fa-solid fa-plus me-1"></i> Add Disease
+                </a>
+            {% endif %}
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Disease Name</th>
+                            <th>Pathogen</th>
+                            <th>Severity Assessment</th>
+                            <th>Associated Symptoms</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for d in diseases %}
+                            <tr>
+                                <td>
+                                    <a href="{% url 'diseases:disease_detail' d.pk %}" class="fw-bold text-decoration-none {% if d.is_healthy %}text-success{% else %}text-danger-emphasis{% endif %}">
+                                        {{ d.disease_name }}
+                                    </a>
+                                </td>
+                                <td class="small">{{ d.pathogen_name|default:"-" }}</td>
+                                <td>
+                                    <span class="badge {% if d.severity == 'high' or d.severity == 'critical' %}badge-severity-high{% elif d.severity == 'moderate' %}badge-severity-moderate{% elif d.severity == 'healthy' %}badge-severity-healthy{% else %}badge-severity-low{% endif %}">
+                                        {{ d.get_severity_display }}
+                                    </span>
+                                </td>
+                                <td>
+                                    {% for s in d.symptoms.all|slice:":3" %}
+                                        <span class="badge bg-light text-dark border small me-1">{{ s.name }}</span>
+                                    {% empty %}
+                                        <span class="text-muted small">-</span>
+                                    {% endfor %}
+                                </td>
+                                <td class="text-end">
+                                    <a href="{% url 'diseases:disease_detail' d.pk %}" class="btn btn-sm btn-agro">
+                                        Details &rarr;
+                                    </a>
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-center py-4 text-muted">
+                                    No diseases registered for this fruit yet.
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

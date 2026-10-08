@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage Prevention | Fruit Disease Detection System{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="fw-bold text-success mb-0">Agricultural Prevention Knowledge Base</h3>
+            <p class="text-muted small mb-0">Long-term field sanitation, micro-drip irrigation, and prophylaxis.</p>
+        </div>
+        <a href="{% url 'detection:admin_dashboard' %}" class="btn btn-outline-secondary btn-sm">
+            <i class="fa-solid fa-arrow-left me-1"></i> Admin Console
+        </a>
+    </div>
+
+    <div class="row g-4">
+        {% if user.is_authenticated and user.profile.is_expert %}
+            <div class="col-lg-4">
+                <div class="card card-agro shadow-sm p-4">
+                    <h5 class="fw-bold text-success mb-3">Add Prevention Measure</h5>
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold">Prevention Title *</label>
+                            {{ form.title }}
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold">Practice Type</label>
+                            {{ form.practice_type }}
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold">Recommended Season</label>
+                            {{ form.season }}
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold">Description *</label>
+                            {{ form.description }}
+                        </div>
+                        <button type="submit" class="btn btn-agro w-100">Save Prevention Measure</button>
+                    </form>
+                </div>
+            </div>
+        {% endif %}
+
+        <div class="{% if user.is_authenticated and user.profile.is_expert %}col-lg-8{% else %}col-12{% endif %}">
+            <div class="card card-agro shadow-sm">
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Practice Type</th>
+                                    <th>Title</th>
+                                    <th>Recommended Season</th>
+                                    <th>Action Summary</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for p in preventions %}
+                                    <tr>
+                                        <td><span class="badge bg-success-subtle text-success border">{{ p.practice_type }}</span></td>
+                                        <td class="fw-bold text-dark">{{ p.title }}</td>
+                                        <td class="small text-muted">{{ p.season }}</td>
+                                        <td class="small text-secondary">{{ p.description|truncatewords:14 }}</td>
+                                    </tr>
+                                {% empty %}
+                                    <tr>
+                                        <td colspan="4" class="text-center py-4 text-muted">No preventions registered.</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

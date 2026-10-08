@@ -1,0 +1,108 @@
+{% extends 'base.html' %}
+
+{% block title %}Disease Catalog | Fruit Disease Detection System{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center flex-wrap mb-4">
+        <div>
+            <h2 class="fw-bold text-success mb-1">
+                <i class="fa-solid fa-biohazard me-2"></i> Phytopathology Disease Directory
+            </h2>
+            <p class="text-muted small mb-0">Browse biological pathogens, severity rankings, and symptom correlations.</p>
+        </div>
+        {% if user.is_authenticated and user.profile.is_expert %}
+            <div class="mt-2 mt-md-0">
+                <a href="{% url 'diseases:disease_create' %}" class="btn btn-danger btn-sm">
+                    <i class="fa-solid fa-plus me-1"></i> Add New Disease
+                </a>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Filter & Search Toolbar -->
+    <div class="card card-agro p-3 mb-4 shadow-sm">
+        <form method="get" class="row g-2 align-items-center">
+            <div class="col-md-4">
+                <div class="input-group">
+                    <span class="input-group-text"><i class="fa-solid fa-magnifying-glass"></i></span>
+                    <input type="text" name="q" class="form-control" placeholder="Search disease name, pathogen..." value="{{ query }}">
+                </div>
+            </div>
+            <div class="col-md-3">
+                <select name="fruit" class="form-select">
+                    <option value="">-- All Host Fruits --</option>
+                    {% for f in fruits %}
+                        <option value="{{ f.id }}" {% if selected_fruit == f.id %}selected{% endif %}>{{ f.fruit_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <select name="severity" class="form-select">
+                    <option value="">-- All Severities --</option>
+                    <option value="healthy" {% if selected_severity == 'healthy' %}selected{% endif %}>Healthy Host Specimen</option>
+                    <option value="low" {% if selected_severity == 'low' %}selected{% endif %}>Low</option>
+                    <option value="moderate" {% if selected_severity == 'moderate' %}selected{% endif %}>Moderate</option>
+                    <option value="high" {% if selected_severity == 'high' %}selected{% endif %}>High</option>
+                    <option value="critical" {% if selected_severity == 'critical' %}selected{% endif %}>Critical / Severe</option>
+                </select>
+            </div>
+            <div class="col-md-2 d-flex gap-2">
+                <button type="submit" class="btn btn-agro flex-grow-1">Filter</button>
+                <a href="{% url 'diseases:disease_list' %}" class="btn btn-outline-secondary">Reset</a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Disease Grid -->
+    <div class="row g-4">
+        {% for disease in diseases %}
+            <div class="col-md-6 col-lg-4">
+                <div class="card card-agro h-100 shadow-sm d-flex flex-column">
+                    <div class="card-body flex-grow-1 p-4">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <span class="badge bg-success-subtle text-success border">{{ disease.affected_fruit.fruit_name }}</span>
+                            <span class="badge {% if disease.severity == 'high' or disease.severity == 'critical' %}badge-severity-high{% elif disease.severity == 'moderate' %}badge-severity-moderate{% elif disease.severity == 'healthy' %}badge-severity-healthy{% else %}badge-severity-low{% endif %}">
+                                {{ disease.get_severity_display }}
+                            </span>
+                        </div>
+                        <h5 class="card-title fw-bold {% if disease.is_healthy %}text-success{% else %}text-danger-emphasis{% endif %} mb-1">
+                            {{ disease.disease_name }}
+                        </h5>
+                        <p class="small text-muted mb-3 fst-italic">
+                            Pathogen: {{ disease.pathogen_name|default:"Non-pathogenic / Healthy" }}
+                        </p>
+
+                        <p class="card-text small text-secondary mb-3">
+                            {{ disease.description|truncatewords:20 }}
+                        </p>
+
+                        <div class="small mb-2">
+                            <strong>Symptoms:</strong>
+                            <div class="d-flex gap-1 flex-wrap mt-1">
+                                {% for s in disease.symptoms.all|slice:":3" %}
+                                    <span class="badge bg-light text-dark border">{{ s.name }}</span>
+                                {% empty %}
+                                    <span class="text-muted">None (Healthy)</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer bg-white border-top p-3 d-flex justify-content-between align-items-center">
+                        <span class="small text-muted font-monospace">{{ disease.code_name }}</span>
+                        <a href="{% url 'diseases:disease_detail' disease.pk %}" class="btn btn-sm btn-agro">
+                            Full Profile &rarr;
+                        </a>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <div class="col-12 text-center py-5 text-muted">
+                <i class="fa-solid fa-virus-covid fa-3x mb-3 text-secondary opacity-50"></i>
+                <p>No diseases found matching selected criteria.</p>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

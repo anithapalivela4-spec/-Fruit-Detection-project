@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }} | Fruit Disease Detection System{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-9">
+            <div class="card card-agro shadow-sm">
+                <div class="card-header card-header-agro py-3">
+                    <h5 class="fw-bold mb-0 text-success">
+                        <i class="fa-solid fa-virus-covid me-2"></i> {{ title }}
+                    </h5>
+                </div>
+                <div class="card-body p-4">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Disease Name *</label>
+                                {{ form.disease_name }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Model Class Code *</label>
+                                {{ form.code_name }}
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-4">
+                                <label class="form-label fw-semibold">Affected Fruit *</label>
+                                {{ form.affected_fruit }}
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-semibold">Severity Rating *</label>
+                                {{ form.severity }}
+                            </div>
+                            <div class="col-md-4 d-flex align-items-center mt-4">
+                                <div class="form-check">
+                                    {{ form.is_healthy }}
+                                    <label class="form-check-label fw-semibold ms-2">Is Healthy Specimen Class</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Pathogen Scientific Name</label>
+                                {{ form.pathogen_name }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Favorable Environmental Conditions</label>
+                                {{ form.environmental_condition }}
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Pathological Description *</label>
+                            {{ form.description }}
+                        </div>
+
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Link Symptoms</label>
+                                {{ form.symptoms }}
+                                <div class="form-text small">Hold Ctrl / Cmd to select multiple</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Link Environmental Factors</label>
+                                {{ form.environmental_factors }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Link Treatments</label>
+                                {{ form.treatments }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Link Prevention Measures</label>
+                                {{ form.preventions }}
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-end gap-2">
+                            <a href="{% url 'diseases:disease_list' %}" class="btn btn-outline-secondary">Cancel</a>
+                            <button type="submit" class="btn btn-agro">Save Disease Record</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

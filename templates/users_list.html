@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage Users | Fruit Disease Detection System{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="fw-bold text-success mb-0">System Users Directory</h3>
+            <p class="text-muted small mb-0">Role-based accounts managing farmers, experts, and administrators</p>
+        </div>
+        <a href="{% url 'detection:admin_dashboard' %}" class="btn btn-outline-secondary btn-sm">
+            <i class="fa-solid fa-arrow-left me-1"></i> Admin Console
+        </a>
+    </div>
+
+    <div class="card card-agro shadow-sm">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>User</th>
+                            <th>Role</th>
+                            <th>Location</th>
+                            <th>Contact</th>
+                            <th>Joined Date</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for u in users %}
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="rounded-circle bg-success text-white d-flex align-items-center justify-content-center me-2 fw-bold" style="width: 36px; height: 36px;">
+                                            {{ u.username|slice:":1"|upper }}
+                                        </div>
+                                        <div>
+                                            <div class="fw-bold">{{ u.get_full_name|default:u.username }}</div>
+                                            <div class="small text-muted">{{ u.email|default:"No email" }}</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    {% if u.profile.role == 'admin' or u.is_superuser %}
+                                        <span class="badge bg-danger">Administrator</span>
+                                    {% elif u.profile.role == 'expert' %}
+                                        <span class="badge bg-primary">Agricultural Expert</span>
+                                    {% else %}
+                                        <span class="badge bg-success">Farmer / User</span>
+                                    {% endif %}
+                                </td>
+                                <td class="small">{{ u.profile.farm_location|default:"Not specified" }}</td>
+                                <td class="small">{{ u.profile.phone|default:"-" }}</td>
+                                <td class="small text-muted">{{ u.date_joined|date:"M d, Y" }}</td>
+                                <td>
+                                    {% if u.is_active %}
+                                        <span class="badge bg-success-subtle text-success">Active</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">Inactive</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="6" class="text-center py-4 text-muted">No users found.</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

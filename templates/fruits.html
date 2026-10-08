@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+
+{% block title %}Fruit Database | Fruit Disease Detection System{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center flex-wrap mb-4">
+        <div>
+            <h2 class="fw-bold text-success mb-1">
+                <i class="fa-solid fa-apple-whole me-2"></i> Fruit Species Database
+            </h2>
+            <p class="text-muted small mb-0">Horticultural taxonomy, growth stages, and known phytopathologies.</p>
+        </div>
+        {% if user.is_authenticated and user.profile.is_expert %}
+            <div class="mt-2 mt-md-0">
+                <a href="{% url 'fruits:fruit_create' %}" class="btn btn-agro btn-sm">
+                    <i class="fa-solid fa-plus me-1"></i> Add New Fruit
+                </a>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Search Bar -->
+    <div class="card card-agro p-3 mb-4 shadow-sm">
+        <form method="get" class="d-flex gap-2">
+            <div class="input-group">
+                <span class="input-group-text"><i class="fa-solid fa-magnifying-glass"></i></span>
+                <input type="text" name="q" class="form-control" placeholder="Search fruit by common name, scientific name..." value="{{ query }}">
+            </div>
+            <button type="submit" class="btn btn-agro px-4">Search</button>
+            {% if query %}
+                <a href="{% url 'fruits:fruit_list' %}" class="btn btn-outline-secondary">Clear</a>
+            {% endif %}
+        </form>
+    </div>
+
+    <!-- Fruit Grid -->
+    <div class="row g-4">
+        {% for fruit in fruits %}
+            <div class="col-md-6 col-lg-4">
+                <div class="card card-agro h-100 shadow-sm d-flex flex-column">
+                    <div class="card-body flex-grow-1 p-4">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h4 class="fw-bold text-success mb-0">{{ fruit.fruit_name }}</h4>
+                            <span class="badge bg-light text-dark border">{{ fruit.total_diseases }} Pathologies</span>
+                        </div>
+                        <h6 class="card-subtitle text-muted fst-italic mb-3">{{ fruit.scientific_name }}</h6>
+                        
+                        <p class="card-text small text-secondary mb-3">
+                            {{ fruit.description|truncatewords:24 }}
+                        </p>
+
+                        <div class="bg-light p-2 rounded small mb-3">
+                            <div><strong>Key Varieties:</strong> {{ fruit.variety }}</div>
+                            <div class="mt-1"><strong>Optimal Temp:</strong> {{ fruit.optimal_temperature }}</div>
+                            <div class="mt-1"><strong>Soil Preference:</strong> {{ fruit.soil_type }}</div>
+                        </div>
+                    </div>
+                    <div class="card-footer bg-white border-top p-3 d-flex justify-content-between align-items-center">
+                        <span class="badge bg-success-subtle text-success">{{ fruit.get_growth_stage_display }}</span>
+                        <a href="{% url 'fruits:fruit_detail' fruit.pk %}" class="btn btn-sm btn-agro">
+                            Explore Fruit &rarr;
+                        </a>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <div class="col-12 text-center py-5 text-muted">
+                <i class="fa-solid fa-seedling fa-3x mb-3 text-secondary opacity-50"></i>
+                <p>No fruits found matching query '{{ query }}'.</p>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

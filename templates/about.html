@@ -1,0 +1,213 @@
+{% extends 'base.html' %}
+
+{% block title %}System Architecture &amp; Ontology | Fruit Disease Detection System{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Academic Header -->
+    <div class="text-center mb-5">
+        <span class="badge bg-success-subtle text-success fw-bold px-3 py-2 rounded-pill mb-2">
+            Diploma Final-Year Project Presentation Reference
+        </span>
+        <h1 class="fw-bolder">Technical Architecture &amp; Methodology</h1>
+        <p class="lead text-muted mx-auto" style="max-width: 800px;">
+            A detailed academic walkthrough of the dual-engine synergy: Machine Learning Computer Vision fused with Semantic Web Ontology Reasoning.
+        </p>
+    </div>
+
+    <!-- Comparative Table: Machine Learning vs Semantic Ontology -->
+    <div class="card card-agro mb-5 shadow-sm">
+        <div class="card-header card-header-agro py-3">
+            <h4 class="fw-bold mb-0 text-success">
+                <i class="fa-solid fa-scale-balanced me-2"></i> Core Academic Distinction: ML vs. Semantic Ontology
+            </h4>
+        </div>
+        <div class="card-body p-4">
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped align-middle">
+                    <thead class="table-success text-dark">
+                        <tr>
+                            <th style="width: 25%;">Dimension</th>
+                            <th style="width: 37.5%;"><i class="fa-solid fa-brain me-1 text-danger"></i> Machine Learning Engine (CNN)</th>
+                            <th style="width: 37.5%;"><i class="fa-solid fa-project-diagram me-1 text-primary"></i> Semantic Web Ontology (OWL / SPARQL)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="fw-bold">Primary Question Answered</td>
+                            <td class="text-danger-emphasis fw-semibold">"What visual pattern or disease class is likely present in this image?"</td>
+                            <td class="text-primary-emphasis fw-semibold">"What is this disease, what pathogen causes it, what symptoms occur, how severe is it, and what care/prevention applies?"</td>
+                        </tr>
+                        <tr>
+                            <td class="fw-bold">Input Modality</td>
+                            <td>Raw image pixels (224x224 RGB floating-point tensor).</td>
+                            <td>Predicted class entity, environmental factors (humidity, temp), and botanical concepts.</td>
+                        </tr>
+                        <tr>
+                            <td class="fw-bold">Reasoning Mechanism</td>
+                            <td>Sub-symbolic convolution layers extracting spatial edge, texture, and chlorosis filters.</td>
+                            <td>Symbolic formal logic axioms, description logic (DL), and SWRL rule chaining.</td>
+                        </tr>
+                        <tr>
+                            <td class="fw-bold">Explainability</td>
+                            <td>Black-box statistical probability / Softmax confidence score.</td>
+                            <td>Transparent, verifiable semantic paths with human-interpretable clinical justifications.</td>
+                        </tr>
+                        <tr>
+                            <td class="fw-bold">Handling of New Care Knowledge</td>
+                            <td>Requires complete model retraining and dataset relabeling.</td>
+                            <td>Immediately updated by adding an OWL triple or SWRL rule in Protégé without retraining.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dual Architecture Workflow Diagram -->
+    <div class="card card-agro mb-5 shadow-sm">
+        <div class="card-header card-header-agro py-3">
+            <h4 class="fw-bold mb-0 text-success">
+                <i class="fa-solid fa-sitemap me-2"></i> End-to-End System Architecture
+            </h4>
+        </div>
+        <div class="card-body p-4 text-center">
+            <div class="bg-light p-4 rounded-4 border font-monospace text-start small">
+                <pre class="mb-0 text-dark">
+[ USER / FARMER ]
+       │  (1. Uploads Fruit / Leaf Specimen)
+       ▼
+┌────────────────────────────────────────────────────────────────────────┐
+│                   PREPROCESSING & COMPUTER VISION                      │
+│  - Format Validation (JPEG/PNG/WEBP, Max 10MB)                         │
+│  - Resize to (224, 224, 3) using Lanczos Interpolation                 │
+│  - Normalization (Rescaling to [0.0, 1.0] / Standard deviation)         │
+└───────────────────────────────────┬────────────────────────────────────┘
+                                    │
+                                    ▼
+┌────────────────────────────────────────────────────────────────────────┐
+│                      MACHINE LEARNING INFERENCE                        │
+│  - Pretrained / Custom CNN Deep Learning Classifier                    │
+│  - Computes class logits & Softmax activation                          │
+│  - Extracts: Predicted Fruit, Predicted Disease, Confidence Score (%)  │
+└───────────────────────────────────┬────────────────────────────────────┘
+                                    │
+                                    ▼
+┌────────────────────────────────────────────────────────────────────────┐
+│               ONTOLOGY REASONING ENGINE (RDFLib / SPARQL)              │
+│  - Loads Protégé-compatible 'FruitDiseaseOntology' (fruit_disease.owl) │
+│  - Matches OWL Individuals: :Fruit, :Disease, :Pathogen, :Severity    │
+│  - Evaluates SWRL Rules (Rules 1-7 for environmental severity rating) │
+│  - Executes SPARQL Queries for Symptoms, Treatments, and Preventions  │
+└───────────────────────────────────┬────────────────────────────────────┘
+                                    │
+                                    ▼
+┌────────────────────────────────────────────────────────────────────────┐
+│                   DIAGNOSIS & ADVISORY GENERATOR                       │
+│  - Combines ML output + OWL Triples + Environmental context            │
+│  - Yields Final Clinical Report: Severity + Pathogen + Safe Remedies   │
+│  - Persists to SQLite (Easy toggle to MySQL) & Generates PDF/Text Log   │
+└────────────────────────────────────────────────────────────────────────┘
+                </pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ontology Classes and Relationships -->
+    <div class="row g-4 mb-5">
+        <div class="col-lg-6">
+            <div class="card card-agro h-100 shadow-sm">
+                <div class="card-header card-header-agro py-3">
+                    <h5 class="fw-bold mb-0 text-success">
+                        <i class="fa-solid fa-cubes me-2"></i> Protégé OWL Classes
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <div><strong>:Fruit</strong> <span class="text-muted small">- Target agricultural host plant</span></div>
+                            <span class="badge bg-success">9 Species</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <div><strong>:Disease</strong> <span class="text-muted small">- Phytopathological condition</span></div>
+                            <span class="badge bg-danger">15+ Classes</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <div><strong>:Symptom</strong> <span class="text-muted small">- Observable morphological lesions</span></div>
+                            <span class="badge bg-warning text-dark">13 Symptoms</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <div><strong>:Pathogen</strong> <span class="text-muted small">- Causative biological organism</span></div>
+                            <span class="badge bg-info text-dark">Fungi / Bacteria</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <div><strong>:Severity</strong> <span class="text-muted small">- Clinical intensity assessment</span></div>
+                            <span class="badge bg-secondary">Healthy to Critical</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <div><strong>:Treatment</strong> <span class="text-muted small">- Organic, biological &amp; cultural remedies</span></div>
+                            <span class="badge bg-primary">Categorized</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <div><strong>:Prevention</strong> <span class="text-muted small">- Proactive prophylactic field measures</span></div>
+                            <span class="badge bg-success">Sanitation/Drip</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <div><strong>:EnvironmentalFactor</strong> <span class="text-muted small">- Temperature &amp; relative humidity</span></div>
+                            <span class="badge bg-dark">Microclimate</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card card-agro h-100 shadow-sm">
+                <div class="card-header card-header-agro py-3">
+                    <h5 class="fw-bold mb-0 text-success">
+                        <i class="fa-solid fa-code-fork me-2"></i> SWRL Inference Rules
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-light border small font-monospace mb-3">
+                        <strong class="text-primary">Rule 1 (Anthracnose Symptom Chaining):</strong><br>
+                        Fruit(?f) ^ affectsFruit(Disease_MangoAnthracnose, ?f) ^ causesSymptom(Disease_MangoAnthracnose, Symptom_BlackSpot) ^ causesSymptom(Disease_MangoAnthracnose, Symptom_Lesion) -&gt; identifiesDisease(?d, Disease_MangoAnthracnose)
+                    </div>
+
+                    <div class="alert alert-light border small font-monospace mb-3">
+                        <strong class="text-danger">Rule 2 (Environmental Severity Escalation):</strong><br>
+                        Disease_MangoAnthracnose(?d) ^ favoredBy(?d, Env_HighHumidity) ^ favoredBy(?d, Env_WarmTemperature) -&gt; hasSeverity(?d, Severity_High)
+                    </div>
+
+                    <div class="alert alert-light border small font-monospace mb-3">
+                        <strong class="text-success">Rule 3 (Treatment Propagation Axiom):</strong><br>
+                        Diagnosis(?diag) ^ identifiesDisease(?diag, ?dis) ^ treatedBy(?dis, ?treat) -&gt; treatedBy(?diag, ?treat)
+                    </div>
+
+                    <div class="alert alert-light border small font-monospace mb-0">
+                        <strong class="text-secondary">Rule 4 (Healthy Tissue Classification):</strong><br>
+                        Diagnosis(?diag) ^ identifiesDisease(?diag, Disease_MangoHealthy) -&gt; hasSeverity(?diag, Severity_Healthy)
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Model Placement Note for Viva -->
+    <div class="card card-agro border-warning border-2 p-4 shadow-sm mb-4">
+        <div class="d-flex align-items-start">
+            <i class="fa-solid fa-circle-info fa-2x text-warning me-3 mt-1"></i>
+            <div>
+                <h5 class="fw-bold mb-1">Deep Learning Model Integration Notice</h5>
+                <p class="text-muted small mb-2">
+                    To make the application resilient during viva evaluation, it includes both an automatic <strong>Keras live inference loader</strong> and a <strong>mock prediction fallback service</strong>.
+                </p>
+                <div class="p-2 rounded bg-light border font-monospace small">
+                    Target Live Model Path: <code>model/saved_models/fruit_disease_model.h5</code><br>
+                    Ontology Location: <code>ontology/fruit_disease.owl</code> (Protégé 5.x compatible)
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

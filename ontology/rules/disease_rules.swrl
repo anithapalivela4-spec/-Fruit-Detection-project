@@ -1,0 +1,32 @@
+# ==============================================================================
+# Fruit Disease Detection System - Semantic Web Rule Language (SWRL) Rules
+# Protégé 5.x Compatible SWRL Rule Base for Semantic Reasoning & Decision Support
+# ==============================================================================
+
+# Rule 1: Mango Anthracnose Identification from Symptoms
+# If a fruit is Mango, and displays Black Spot and Lesion symptoms, then identify Mango Anthracnose.
+Fruit(?f) ^ affectsFruit(Disease_MangoAnthracnose, ?f) ^ causesSymptom(Disease_MangoAnthracnose, Symptom_BlackSpot) ^ causesSymptom(Disease_MangoAnthracnose, Symptom_Lesion) -> identifiesDisease(?d, Disease_MangoAnthracnose)
+
+# Rule 2: High Severity Inference under High Humidity & Warmth
+# If Disease is Mango Anthracnose and favored by High Humidity and Warm Temperature, infer High Severity.
+Disease_MangoAnthracnose(?d) ^ favoredBy(?d, Env_HighHumidity) ^ favoredBy(?d, Env_WarmTemperature) -> hasSeverity(?d, Severity_High)
+
+# Rule 3: Apple Scab Identification from Symptoms
+# If a fruit is Apple, and displays Olive Green Spots and Lesions under Cool/Wet weather, identify Apple Scab.
+Fruit(?f) ^ affectsFruit(Disease_AppleScab, ?f) ^ causesSymptom(Disease_AppleScab, Symptom_OliveGreenSpot) ^ favoredBy(Disease_AppleScab, Env_CoolWet) -> identifiesDisease(?diag, Disease_AppleScab)
+
+# Rule 4: Citrus Canker Severity Escalation
+# If Citrus Canker is detected on Citrus/Orange with Corky Lesions and High Humidity, infer High Severity and Copper Protectant Requirement.
+affectsFruit(Disease_CitrusCanker, Fruit_Orange) ^ causesSymptom(Disease_CitrusCanker, Symptom_CankerLesions) ^ favoredBy(Disease_CitrusCanker, Env_HighHumidity) -> treatedBy(Disease_CitrusCanker, Treatment_CopperFungicide)
+
+# Rule 5: Treatment Suggestion Propagation
+# If a Diagnosis identifies a Disease, infer all associated safe Treatments to the Diagnosis record.
+Diagnosis(?diag) ^ identifiesDisease(?diag, ?dis) ^ treatedBy(?dis, ?treat) -> treatedBy(?diag, ?treat)
+
+# Rule 6: Prevention Suggestion Propagation
+# If a Diagnosis identifies a Disease, infer all preventative cultural practices to the Diagnosis record.
+Diagnosis(?diag) ^ identifiesDisease(?diag, ?dis) ^ preventedBy(?dis, ?prev) -> preventedBy(?diag, ?prev)
+
+# Rule 7: Healthy Fruit Status Validation
+# If prediction indicates healthy fruit with zero necrotic symptoms, assign Severity Healthy and general canopy hygiene.
+Diagnosis(?diag) ^ identifiesDisease(?diag, Disease_MangoHealthy) -> hasSeverity(?diag, Severity_Healthy)

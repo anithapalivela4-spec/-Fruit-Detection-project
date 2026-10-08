@@ -1,0 +1,78 @@
+@prefix : <http://www.semanticweb.org/ontologies/2026/fruit-disease#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<http://www.semanticweb.org/ontologies/2026/fruit-disease> a owl:Ontology ;
+    rdfs:label "FruitDiseaseOntology" ;
+    rdfs:comment "Ontology for Fruit Disease Detection, Severity Reasoning, and Care Recommendations" ;
+    owl:versionInfo "2.0" .
+
+# Classes
+:Fruit a owl:Class .
+:Disease a owl:Class .
+:Symptom a owl:Class .
+:Image a owl:Class .
+:EnvironmentalFactor a owl:Class .
+:Diagnosis a owl:Class .
+:Treatment a owl:Class .
+:Prevention a owl:Class .
+:Severity a owl:Class .
+:Prediction a owl:Class .
+:User a owl:Class .
+:Pathogen a owl:Class .
+:Variety a owl:Class .
+
+# Object Properties
+:hasDisease a owl:ObjectProperty ;
+    rdfs:domain :Fruit ;
+    rdfs:range :Disease .
+
+:affectsFruit a owl:ObjectProperty ;
+    owl:inverseOf :hasDisease ;
+    rdfs:domain :Disease ;
+    rdfs:range :Fruit .
+
+:causesSymptom a owl:ObjectProperty ;
+    rdfs:domain :Disease ;
+    rdfs:range :Symptom .
+
+:causedBy a owl:ObjectProperty ;
+    rdfs:domain :Disease ;
+    rdfs:range :Pathogen .
+
+:hasSeverity a owl:ObjectProperty ;
+    rdfs:range :Severity .
+
+:treatedBy a owl:ObjectProperty ;
+    rdfs:domain :Disease ;
+    rdfs:range :Treatment .
+
+:preventedBy a owl:ObjectProperty ;
+    rdfs:domain :Disease ;
+    rdfs:range :Prevention .
+
+:favoredBy a owl:ObjectProperty ;
+    rdfs:domain :Disease ;
+    rdfs:range :EnvironmentalFactor .
+
+:represents a owl:ObjectProperty ;
+    rdfs:domain :Image ;
+    rdfs:range :Fruit .
+
+:containsSymptom a owl:ObjectProperty ;
+    rdfs:domain :Image ;
+    rdfs:range :Symptom .
+
+:producesPrediction a owl:ObjectProperty ;
+    rdfs:domain :Image ;
+    rdfs:range :Prediction .
+
+:predictsDisease a owl:ObjectProperty ;
+    rdfs:domain :Prediction ;
+    rdfs:range :Disease .
+
+:identifiesDisease a owl:ObjectProperty ;
+    rdfs:domain :Diagnosis ;
+    rdfs:range :Disease .

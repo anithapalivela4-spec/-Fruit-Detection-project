@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+
+{% block title %}Login | Fruit Disease Detection System{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="card card-agro shadow">
+                <div class="card-header card-header-agro text-center py-4">
+                    <i class="fa-solid fa-lock text-success fa-2x mb-2"></i>
+                    <h4 class="fw-bold mb-0">System Authentication</h4>
+                    <p class="small text-muted mb-0">Access diagnosis history &amp; detection console</p>
+                </div>
+                <div class="card-body p-4">
+                    <form method="post" action="{% url 'accounts:login' %}">
+                        {% csrf_token %}
+                        {% if request.GET.next %}
+                            <input type="hidden" name="next" value="{{ request.GET.next }}">
+                        {% endif %}
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Username or Email</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fa-solid fa-user"></i></span>
+                                {{ form.username }}
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold">Password</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fa-solid fa-key"></i></span>
+                                {{ form.password }}
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-agro w-100 py-2 fw-bold">
+                            <i class="fa-solid fa-arrow-right-to-bracket me-2"></i> Login to System
+                        </button>
+                    </form>
+
+                    <div class="alert alert-light border small mt-4 mb-2">
+                        <strong class="text-success"><i class="fa-solid fa-key me-1"></i> Quick Demo Accounts:</strong><br>
+                        • <strong>Administrator:</strong> <code>admin</code> / <code>admin123</code><br>
+                        • <strong>Farmer:</strong> <code>farmer_ramesh</code> / <code>farmer123</code><br>
+                        • <strong>Expert:</strong> <code>expert_dr_sharma</code> / <code>expert123</code>
+                    </div>
+
+                    <div class="text-center mt-3 small">
+                        Don't have an account? <a href="{% url 'accounts:register' %}" class="fw-bold text-success">Register Here</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
