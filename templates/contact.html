@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+
+{% block title %}Contact Us | Fruit Disease Detection System{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Header (Matches Screenshot 5: Get In Touch) -->
+    <div class="mb-4">
+        <h3 class="fw-bold text-dark d-flex align-items-center mb-1">
+            <span class="me-2 text-success">✉️</span> Get In Touch
+        </h3>
+        <p class="text-muted small mb-0">
+            Have any questions or suggestions? We'd love to hear from you.
+        </p>
+    </div>
+
+    <!-- Main Contact Row -->
+    <div class="row g-4">
+        <!-- Left Column: Contact Information Cards -->
+        <div class="col-lg-5">
+            <!-- Email -->
+            <div class="contact-info-card">
+                <div class="contact-info-icon">
+                    <i class="fa-solid fa-envelope"></i>
+                </div>
+                <div>
+                    <div class="fw-bold text-dark small">Email</div>
+                    <div class="text-muted small">fruitdisease@gmail.com</div>
+                </div>
+            </div>
+
+            <!-- Phone -->
+            <div class="contact-info-card">
+                <div class="contact-info-icon">
+                    <i class="fa-solid fa-phone"></i>
+                </div>
+                <div>
+                    <div class="fw-bold text-dark small">Phone</div>
+                    <div class="text-muted small">7995210970</div>
+                </div>
+            </div>
+
+            <!-- Location -->
+            <div class="contact-info-card">
+                <div class="contact-info-icon">
+                    <i class="fa-solid fa-location-dot"></i>
+                </div>
+                <div>
+                    <div class="fw-bold text-dark small">Location</div>
+                    <div class="text-muted small">Rajahmundry, Andhra Pradesh, India</div>
+                </div>
+            </div>
+
+            <!-- Follow Us -->
+            <div class="mt-4 pt-2">
+                <div class="d-flex align-items-center gap-2">
+                    <span class="fw-bold text-dark small me-2">Follow Us</span>
+                    <a href="#" class="social-circle-link" title="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
+                    <a href="#" class="social-circle-link" title="Instagram"><i class="fa-brands fa-instagram"></i></a>
+                    <a href="#" class="social-circle-link" title="LinkedIn"><i class="fa-brands fa-linkedin-in"></i></a>
+                    <a href="#" class="social-circle-link" title="YouTube"><i class="fa-brands fa-youtube"></i></a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column: Contact Form -->
+        <div class="col-lg-7">
+            <div class="contact-form-card">
+                <form method="post" action="{% url 'contact' %}">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold text-muted">Name</label>
+                        <input type="text" name="name" class="form-control" placeholder="Enter your name" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold text-muted">Email</label>
+                        <input type="email" name="email" class="form-control" placeholder="Enter your email" required>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label small fw-semibold text-muted">Message</label>
+                        <textarea name="message" class="form-control" rows="4" placeholder="Type your message..." required></textarea>
+                    </div>
+
+                    <button type="submit" class="btn-theme-green w-100 py-2">
+                        <i class="fa-solid fa-paper-plane me-1"></i> Send Message
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Wave Banner with Fruits (Matches Screenshot 5: Let's Grow Healthy Together) -->
+    <div class="contact-bottom-wave">
+        <div class="d-flex justify-content-between align-items-center flex-wrap px-3">
+            <img src="/static/images/apple.png" alt="Fruit" class="fruit-icon-thumb d-none d-md-inline" style="width: 50px; height: 50px;">
+            <div class="contact-bottom-text mx-auto my-2">
+                Let's Grow Healthy Together
+            </div>
+            <img src="/static/images/orange.png" alt="Fruit" class="fruit-icon-thumb d-none d-md-inline" style="width: 50px; height: 50px;">
+        </div>
+    </div>
+</div>
+{% endblock %}
