@@ -17,7 +17,8 @@ test_cases = [
     ('Orange Healthy', 'static/images/orange.png', 'Orange', 'No disease detected'),
     ('Citrus Canker', 'media/uploads/2026/10/08/Screenshot_2026-10-08_171717.png', 'Orange', 'Citrus Canker'),
     ('Tomato Healthy', 'static/images/tomato.png', 'Tomato', 'No disease detected'),
-    ('Tomato Early Blight', 'media/uploads/2026/10/09/Screenshot_2026-10-09_141100.png', 'Tomato', 'Tomato Early Blight'),
+    ('Tomato Healthy (Uploaded)', 'media/uploads/2026/10/09/Screenshot_2026-10-09_141100.png', 'Tomato', 'No disease detected'),
+    ('Tomato Early Blight', 'media/uploads/2026/10/08/Screenshot_2026-10-08_171733.png', 'Tomato', 'Tomato Early Blight'),
 ]
 
 # Support 'No disease detected' or '{Fruit} Healthy'

@@ -30,7 +30,7 @@ class UploadedImage(models.Model):
 
 class Prediction(models.Model):
     uploaded_image = models.OneToOneField(UploadedImage, on_delete=models.CASCADE, related_name='prediction')
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='predictions')
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='predictions')
     
     # ML Outputs
     fruit_name = models.CharField(max_length=100)
@@ -58,7 +58,7 @@ class Prediction(models.Model):
 
     @property
     def is_healthy(self):
-        return 'healthy' in self.disease_name.lower() or (self.disease_ref and self.disease_ref.is_healthy)
+        return 'healthy' in self.disease_name.lower() or 'no disease' in self.disease_name.lower() or (self.disease_ref and self.disease_ref.is_healthy)
 
 
 class Diagnosis(models.Model):

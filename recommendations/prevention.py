@@ -14,7 +14,7 @@ from typing import List, Dict
 
 def get_prevention_guidelines(disease_name: str, fruit_name: str = "") -> List[Dict[str, str]]:
     """Return categorized prevention measures for the diagnosed disease."""
-    is_healthy = "healthy" in disease_name.lower()
+    is_healthy = "healthy" in disease_name.lower() or "no disease" in disease_name.lower()
     
     guidelines = [
         {

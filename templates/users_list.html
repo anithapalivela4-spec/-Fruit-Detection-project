@@ -14,8 +14,8 @@
         </a>
     </div>
 
-    <div class="card card-agro shadow-sm">
-        <div class="card-body p-0">
+    <div class="bg-white border rounded-3 shadow-sm overflow-hidden">
+        <div>
             <div class="table-responsive">
                 <table class="table table-hover align-middle mb-0">
                     <thead class="table-light">
@@ -33,7 +33,7 @@
                             <tr>
                                 <td>
                                     <div class="d-flex align-items-center">
-                                        <div class="rounded-circle bg-success text-white d-flex align-items-center justify-content-center me-2 fw-bold" style="width: 36px; height: 36px;">
+                                        <div class="rounded-circle text-white d-flex align-items-center justify-content-center me-2 fw-bold" style="width: 36px; height: 36px; background-color: var(--theme-green);">
                                             {{ u.username|slice:":1"|upper }}
                                         </div>
                                         <div>
@@ -48,7 +48,7 @@
                                     {% elif u.profile.role == 'expert' %}
                                         <span class="badge bg-primary">Agricultural Expert</span>
                                     {% else %}
-                                        <span class="badge bg-success">Farmer / User</span>
+                                        <span class="badge bg-success-subtle text-success border border-success-subtle">Farmer / User</span>
                                     {% endif %}
                                 </td>
                                 <td class="small">{{ u.profile.farm_location|default:"Not specified" }}</td>
@@ -56,7 +56,7 @@
                                 <td class="small text-muted">{{ u.date_joined|date:"M d, Y" }}</td>
                                 <td>
                                     {% if u.is_active %}
-                                        <span class="badge bg-success-subtle text-success">Active</span>
+                                        <span class="badge bg-success-subtle text-success border border-success-subtle">Active</span>
                                     {% else %}
                                         <span class="badge bg-secondary">Inactive</span>
                                     {% endif %}

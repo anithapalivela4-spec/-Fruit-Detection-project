@@ -20,7 +20,7 @@ def get_categorized_treatments(disease_name: str) -> Dict[str, List[Dict[str, st
     """Return categorized treatment recommendations based on disease."""
     d_lower = disease_name.lower()
     
-    if "healthy" in d_lower:
+    if "healthy" in d_lower or "no disease" in d_lower:
         return {
             'cultural': [{
                 'title': 'Canopy Aeration & Pruning',

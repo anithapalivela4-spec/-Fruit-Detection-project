@@ -24,18 +24,18 @@
             </p>
         </div>
         <div class="mt-2 mt-md-0">
-            <a href="{% url 'detection:detect' %}" class="btn btn-warning text-dark fw-bold btn-sm shadow-sm">
+            <a href="{% url 'detection:detect' %}" class="btn-theme-green btn-sm shadow-sm">
                 <i class="fa-solid fa-camera-retro me-1"></i> New Specimen Scan
             </a>
         </div>
     </div>
 
     <!-- Filter & Search Toolbar -->
-    <div class="card card-agro p-3 mb-4 shadow-sm">
+    <div class="bg-white border rounded-3 p-3 mb-4 shadow-sm">
         <form method="get" class="row g-2 align-items-center">
             <div class="col-md-5">
                 <div class="input-group">
-                    <span class="input-group-text"><i class="fa-solid fa-magnifying-glass"></i></span>
+                    <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-magnifying-glass text-muted"></i></span>
                     <input type="text" name="q" class="form-control" placeholder="Search disease, fruit..." value="{{ query }}">
                 </div>
             </div>
@@ -48,15 +48,15 @@
                 </select>
             </div>
             <div class="col-md-3 d-flex gap-2">
-                <button type="submit" class="btn btn-agro flex-grow-1">Filter</button>
-                <a href="{% url 'detection:history' %}" class="btn btn-outline-secondary">Reset</a>
+                <button type="submit" class="btn btn-theme-green flex-grow-1">Filter</button>
+                <a href="{% url 'detection:history' %}" class="btn btn-theme-outline">Reset</a>
             </div>
         </form>
     </div>
 
     <!-- Prediction History Table -->
-    <div class="card card-agro shadow-sm mb-4">
-        <div class="card-body p-0">
+    <div class="bg-white border rounded-3 shadow-sm mb-4 overflow-hidden">
+        <div>
             <div class="table-responsive">
                 <table class="table table-hover align-middle mb-0">
                     <thead class="table-light">
@@ -114,10 +114,10 @@
                                 <td class="small text-muted">{{ p.created_at|date:"M d, Y H:i" }}</td>
                                 <td class="text-end">
                                     <div class="btn-group btn-group-sm">
-                                        <a href="{% url 'detection:result' p.pk %}" class="btn btn-agro" title="View Full Report">
+                                        <a href="{% url 'detection:result' p.pk %}" class="btn btn-theme-green" title="View Full Report">
                                             <i class="fa-solid fa-eye me-1"></i> Result
                                         </a>
-                                        <a href="{% url 'detection:export_report' p.pk %}" class="btn btn-outline-secondary" title="Download Text Summary">
+                                        <a href="{% url 'detection:export_report' p.pk %}" class="btn btn-theme-outline" title="Download Text Summary">
                                             <i class="fa-solid fa-download"></i>
                                         </a>
                                         <form method="post" action="{% url 'detection:delete_prediction' p.pk %}" class="d-inline form-confirm-delete">
@@ -134,7 +134,7 @@
                                 <td colspan="9" class="text-center py-5 text-muted">
                                     <i class="fa-solid fa-folder-open fa-3x mb-3 text-secondary opacity-50"></i>
                                     <p class="mb-2">No matching prediction records found.</p>
-                                    <a href="{% url 'detection:detect' %}" class="btn btn-sm btn-agro">Upload a Specimen Image</a>
+                                    <a href="{% url 'detection:detect' %}" class="btn btn-sm btn-theme-green">Upload a Specimen Image</a>
                                 </td>
                             </tr>
                         {% endfor %}

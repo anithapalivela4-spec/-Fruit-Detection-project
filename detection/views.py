@@ -1,5 +1,7 @@
 import os
+import csv
 import json
+from django.core.files import File
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views import View
 from django.views.generic import TemplateView
@@ -38,6 +40,25 @@ class AboutView(TemplateView):
     template_name = 'about.html'
 
 
+class ContactView(View):
+    def get(self, request):
+        return render(request, 'contact.html')
+
+    def post(self, request):
+        name = request.POST.get('name', '').strip()
+        email = request.POST.get('email', '').strip()
+        message = request.POST.get('message', '').strip()
+        messages.success(request, f"Thank you {name or 'for reaching out'}! Your message has been sent successfully. Our agronomy team will get back to you shortly.")
+        return render(request, 'contact.html', {'success': True})
+
+
+class GalleryView(View):
+    def get(self, request):
+        fruits = Fruit.objects.all().prefetch_related('diseases')
+        diseases = Disease.objects.all().select_related('affected_fruit')
+        return render(request, 'gallery.html', {'fruits': fruits, 'diseases': diseases})
+
+
 @method_decorator(login_required, name='dispatch')
 class DashboardView(View):
     def get(self, request):
@@ -45,7 +66,7 @@ class DashboardView(View):
         predictions = Prediction.objects.filter(user=user).select_related('diagnosis', 'uploaded_image')
 
         total_predictions = predictions.count()
-        healthy_results = predictions.filter(disease_name__icontains='healthy').count()
+        healthy_results = predictions.filter(Q(disease_name__icontains='healthy') | Q(disease_name__icontains='no disease')).count()
         diseases_detected = total_predictions - healthy_results
 
         recent_predictions = predictions[:6]
@@ -103,7 +124,6 @@ class AdminDashboardView(View):
         return render(request, 'admin_dashboard.html', context)
 
 
-@method_decorator(login_required, name='dispatch')
 class UploadAndDetectView(View):
     def get(self, request):
         form = ImageUploadForm()
@@ -119,9 +139,12 @@ class UploadAndDetectView(View):
             humidity = form.cleaned_data.get('humidity', '').strip()
             user_notes = form.cleaned_data.get('user_notes', '').strip()
 
+            # Support anonymous visitors (user=None if not logged in)
+            active_user = request.user if request.user.is_authenticated else None
+
             # 1. Save uploaded image
             uploaded_img_obj = UploadedImage.objects.create(
-                user=request.user,
+                user=active_user,
                 image=image_file,
                 original_filename=image_file.name,
                 file_size_bytes=image_file.size
@@ -140,6 +163,13 @@ class UploadAndDetectView(View):
             predictor_service = DetectionPredictorService()
             ml_result = predictor_service.run_prediction(uploaded_img_obj.image.path, fruit_hint=fruit_hint)
 
+            if ml_result.get('unsupported'):
+                messages.warning(
+                    request,
+                    ml_result.get('message', "The uploaded image could not be identified as a supported fruit or disease specimen. Please upload a clear photo of Tomato, Orange, Grape, Apple, Mango, or Banana.")
+                )
+                return redirect('detection:detect')
+
             # 3. Run Semantic Ontology Reasoning Engine & Diagnostic Synthesis
             diag_engine = DiagnosisEngine()
             env_context = {
@@ -151,7 +181,7 @@ class UploadAndDetectView(View):
             # 4. Persist Prediction record
             prediction_record = Prediction.objects.create(
                 uploaded_image=uploaded_img_obj,
-                user=request.user,
+                user=active_user,
                 fruit_name=diag_result['fruit_name'],
                 disease_name=diag_result['disease_name'],
                 confidence=diag_result['confidence'],
@@ -177,26 +207,34 @@ class UploadAndDetectView(View):
                 ontology_individual=diag_result.get('ontology_individual', '')
             )
 
-            messages.success(request, f"Image processed successfully: {prediction_record.disease_name} detected.")
+            if prediction_record.is_healthy:
+                messages.success(request, f"Image processed successfully: Healthy {prediction_record.fruit_name} verified (No disease detected).")
+            else:
+                messages.success(request, f"Image processed successfully: {prediction_record.disease_name} detected.")
             return redirect('detection:result', pk=prediction_record.pk)
 
         fruits = Fruit.objects.all()
         return render(request, 'upload.html', {'form': form, 'fruits': fruits})
 
 
-@method_decorator(login_required, name='dispatch')
+
+
 class ResultView(View):
     def get(self, request, pk):
         prediction = get_object_or_404(
             Prediction.objects.select_related('uploaded_image', 'user', 'diagnosis', 'fruit_ref', 'disease_ref'),
             pk=pk
         )
-        # Check permissions: users can only view their own predictions unless admin
-        if not (request.user.is_superuser or request.user.profile.is_admin or prediction.user == request.user):
-            messages.error(request, "Permission denied.")
-            return redirect('dashboard')
-
-        return render(request, 'result.html', {'prediction': prediction, 'diagnosis': prediction.diagnosis})
+        # Allow: anonymous predictions (user=None), the prediction owner, or admins
+        is_owner = (prediction.user is None) or (request.user.is_authenticated and prediction.user == request.user)
+        is_admin = request.user.is_authenticated and (
+            request.user.is_superuser or
+            (hasattr(request.user, 'profile') and request.user.profile.is_admin)
+        )
+        if not (is_owner or is_admin):
+            messages.error(request, "Permission denied. You can only view your own prediction records.")
+            return redirect('detection:history')
+        return render(request, 'result.html', {'prediction': prediction, 'diagnosis': getattr(prediction, 'diagnosis', None)})
 
 
 @method_decorator(login_required, name='dispatch')
@@ -260,18 +298,46 @@ class DeletePredictionView(View):
         return redirect('detection:history')
 
 
-@method_decorator(login_required, name='dispatch')
 class ExportReportView(View):
     def get(self, request, pk):
         prediction = get_object_or_404(
             Prediction.objects.select_related('uploaded_image', 'user', 'diagnosis'),
             pk=pk
         )
-        if not (request.user.is_superuser or request.user.profile.is_admin or prediction.user == request.user):
+        # Allow anonymous predictions or the authenticated owner/admin
+        is_owner = (prediction.user is None) or (request.user.is_authenticated and prediction.user == request.user)
+        is_admin = request.user.is_authenticated and (
+            request.user.is_superuser or
+            (hasattr(request.user, 'profile') and request.user.profile.is_admin)
+        )
+        if not (is_owner or is_admin):
             messages.error(request, "Permission denied.")
-            return redirect('dashboard')
+            return redirect('home')
 
         report_content = generate_text_report(prediction)
         response = HttpResponse(report_content, content_type='text/plain; charset=utf-8')
         response['Content-Disposition'] = f'attachment; filename="FruitDisease_Report_{prediction.id}.txt"'
         return response
+
+
+class PrintableReportView(View):
+    def get(self, request, pk):
+        prediction = get_object_or_404(
+            Prediction.objects.select_related('uploaded_image', 'user', 'diagnosis', 'fruit_ref', 'disease_ref'),
+            pk=pk
+        )
+        # Allow anonymous predictions or the authenticated owner/admin
+        is_owner = (prediction.user is None) or (request.user.is_authenticated and prediction.user == request.user)
+        is_admin = request.user.is_authenticated and (
+            request.user.is_superuser or
+            (hasattr(request.user, 'profile') and request.user.profile.is_admin)
+        )
+        if not (is_owner or is_admin):
+            messages.error(request, "Permission denied.")
+            return redirect('home')
+        diagnosis = getattr(prediction, 'diagnosis', None)
+        return render(request, 'print_report.html', {
+            'prediction': prediction,
+            'diagnosis': diagnosis
+        })
+

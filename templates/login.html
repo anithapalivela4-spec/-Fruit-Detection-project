@@ -6,50 +6,57 @@
 <div class="container py-5">
     <div class="row justify-content-center">
         <div class="col-md-6 col-lg-5">
-            <div class="card card-agro shadow">
-                <div class="card-header card-header-agro text-center py-4">
-                    <i class="fa-solid fa-lock text-success fa-2x mb-2"></i>
-                    <h4 class="fw-bold mb-0">System Authentication</h4>
-                    <p class="small text-muted mb-0">Access diagnosis history &amp; detection console</p>
+            <div class="bg-white border rounded-4 shadow-sm p-4 p-md-5">
+                <div class="text-center mb-4">
+                    <div class="d-inline-flex align-items-center justify-content-center bg-success-subtle text-success rounded-circle mb-3" style="width: 64px; height: 64px;">
+                        <i class="fa-solid fa-lock fa-2x"></i>
+                    </div>
+                    <h3 class="fw-bold mb-1" style="color: var(--theme-green);">System Authentication</h3>
+                    <p class="text-muted small">Access diagnosis history &amp; detection console</p>
                 </div>
-                <div class="card-body p-4">
-                    <form method="post" action="{% url 'accounts:login' %}">
-                        {% csrf_token %}
-                        {% if request.GET.next %}
-                            <input type="hidden" name="next" value="{{ request.GET.next }}">
-                        {% endif %}
 
-                        <div class="mb-3">
-                            <label class="form-label fw-semibold">Username or Email</label>
-                            <div class="input-group">
-                                <span class="input-group-text"><i class="fa-solid fa-user"></i></span>
-                                {{ form.username }}
-                            </div>
+                <form method="post" action="{% url 'accounts:login' %}">
+                    {% csrf_token %}
+                    {% if request.GET.next %}
+                        <input type="hidden" name="next" value="{{ request.GET.next }}">
+                    {% endif %}
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold text-secondary small">Email or Username</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-envelope text-muted"></i></span>
+                            {{ form.email }}
                         </div>
-
-                        <div class="mb-4">
-                            <label class="form-label fw-semibold">Password</label>
-                            <div class="input-group">
-                                <span class="input-group-text"><i class="fa-solid fa-key"></i></span>
-                                {{ form.password }}
-                            </div>
-                        </div>
-
-                        <button type="submit" class="btn btn-agro w-100 py-2 fw-bold">
-                            <i class="fa-solid fa-arrow-right-to-bracket me-2"></i> Login to System
-                        </button>
-                    </form>
-
-                    <div class="alert alert-light border small mt-4 mb-2">
-                        <strong class="text-success"><i class="fa-solid fa-key me-1"></i> Quick Demo Accounts:</strong><br>
-                        • <strong>Administrator:</strong> <code>admin</code> / <code>admin123</code><br>
-                        • <strong>Farmer:</strong> <code>farmer_ramesh</code> / <code>farmer123</code><br>
-                        • <strong>Expert:</strong> <code>expert_dr_sharma</code> / <code>expert123</code>
                     </div>
 
-                    <div class="text-center mt-3 small">
-                        Don't have an account? <a href="{% url 'accounts:register' %}" class="fw-bold text-success">Register Here</a>
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold text-secondary small">Password</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-key text-muted"></i></span>
+                            {{ form.password }}
+                        </div>
                     </div>
+
+                    <button type="submit" class="btn btn-theme-green w-100 py-2 fw-semibold">
+                        <i class="fa-solid fa-arrow-right-to-bracket me-2"></i> Login to System
+                    </button>
+                </form>
+
+                <div class="p-3 bg-light rounded-3 border small mt-4 mb-3">
+                    <strong class="d-block mb-1" style="color: var(--theme-green);"><i class="fa-solid fa-key me-1"></i> Quick Demo Accounts:</strong>
+                    <div class="d-flex justify-content-between py-1 border-bottom border-light-subtle">
+                        <span>Admin:</span> <code>admin / admin123</code>
+                    </div>
+                    <div class="d-flex justify-content-between py-1 border-bottom border-light-subtle">
+                        <span>Farmer:</span> <code>farmer_ramesh / farmer123</code>
+                    </div>
+                    <div class="d-flex justify-content-between py-1">
+                        <span>Expert:</span> <code>expert_dr_sharma / expert123</code>
+                    </div>
+                </div>
+
+                <div class="text-center mt-3 small text-muted">
+                    Don't have an account? <a href="{% url 'accounts:register' %}" class="fw-semibold" style="color: var(--theme-green);">Register Here</a>
                 </div>
             </div>
         </div>

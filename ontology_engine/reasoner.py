@@ -31,9 +31,14 @@ class OntologyReasoner:
         "Grape Esca": "Disease_GrapeBlackRot",
         "Grape Leaf Blight": "Disease_GrapeBlackRot",
         "Banana Sigatoka": "Disease_BananaSigatoka",
-        "Panama Disease": "Disease_BananaSigatoka",
         "Mango Healthy": "Disease_MangoHealthy",
         "Apple Healthy": "Disease_AppleHealthy",
+        "Tomato Early Blight": "Disease_TomatoEarlyBlight",
+        "Tomato Late Blight": "Disease_TomatoEarlyBlight",
+        "Tomato Healthy": "Disease_TomatoHealthy",
+        "Orange Healthy": "Disease_OrangeHealthy",
+        "Grape Healthy": "Disease_GrapeHealthy",
+        "Banana Healthy": "Disease_BananaHealthy",
     }
 
     def __init__(self, owl_path=None):
@@ -63,10 +68,11 @@ class OntologyReasoner:
         """
         fruit = ml_prediction.get("fruit", "Unknown")
         disease_name = ml_prediction.get("disease", "Unknown Disease")
+        raw_disease = ml_prediction.get("raw_disease", disease_name)
         confidence = ml_prediction.get("confidence", 0.0)
-        is_healthy = "healthy" in disease_name.lower() or "healthy" in fruit.lower()
+        is_healthy = ml_prediction.get("is_healthy", False) or "healthy" in disease_name.lower() or "no disease" in disease_name.lower() or "healthy" in raw_disease.lower()
 
-        individual_key = self.find_individual_key(disease_name)
+        individual_key = self.find_individual_key(raw_disease or disease_name)
         
         ontology_symptoms = []
         ontology_treatments = []
@@ -78,11 +84,19 @@ class OntologyReasoner:
         if is_healthy:
             severity = "Healthy"
             pathogen = "None (Healthy Plant Tissue)"
+            individual_key = f"Disease_{fruit}Healthy"
             ontology_symptoms = ["Normal Leaf Morphology", "Vibrant Green Pigmentation", "Absence of Necrotic Lesions"]
-            ontology_treatments = ["Maintain standard irrigation and nutrient balance."]
-            ontology_preventions = ["Regular monitoring and canopy sanitation."]
+            ontology_treatments = [
+                "Maintain standard irrigation and nutrient balance.",
+                "Canopy Aeration & Pruning: Keep inner canopy open to ensure uniform sunlight penetration and prevent moisture buildup."
+            ]
+            ontology_preventions = [
+                "Regular monitoring and canopy sanitation.",
+                "Sanitation & Orchard Hygiene: Disinfect shears and pruning tools.",
+                "Irrigation Management: Use micro-drip or sub-surface irrigation."
+            ]
             explanation = (
-                f"Ontology Rule Verification: The ML model classified the specimen as '{disease_name}' with {confidence}% confidence. "
+                f"Ontology Rule Verification: The ML model classified the {fruit} specimen as healthy with {confidence:.1f}% confidence (No disease detected). "
                 f"The semantic knowledge graph confirms no active pathogens or necrotic symptoms on {fruit}. "
                 f"The plant tissue is categorized under Severity Class 'Healthy'."
             )

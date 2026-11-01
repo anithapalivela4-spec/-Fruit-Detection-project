@@ -22,11 +22,11 @@
     </div>
 
     <!-- Filter & Search Toolbar -->
-    <div class="card card-agro p-3 mb-4 shadow-sm">
+    <div class="bg-white border rounded-3 p-3 mb-4 shadow-sm">
         <form method="get" class="row g-2 align-items-center">
             <div class="col-md-4">
                 <div class="input-group">
-                    <span class="input-group-text"><i class="fa-solid fa-magnifying-glass"></i></span>
+                    <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-magnifying-glass text-muted"></i></span>
                     <input type="text" name="q" class="form-control" placeholder="Search disease name, pathogen..." value="{{ query }}">
                 </div>
             </div>
@@ -49,8 +49,8 @@
                 </select>
             </div>
             <div class="col-md-2 d-flex gap-2">
-                <button type="submit" class="btn btn-agro flex-grow-1">Filter</button>
-                <a href="{% url 'diseases:disease_list' %}" class="btn btn-outline-secondary">Reset</a>
+                <button type="submit" class="btn btn-theme-green flex-grow-1">Filter</button>
+                <a href="{% url 'diseases:disease_list' %}" class="btn btn-theme-outline">Reset</a>
             </div>
         </form>
     </div>
@@ -59,15 +59,15 @@
     <div class="row g-4">
         {% for disease in diseases %}
             <div class="col-md-6 col-lg-4">
-                <div class="card card-agro h-100 shadow-sm d-flex flex-column">
-                    <div class="card-body flex-grow-1 p-4">
+                <div class="bg-white border rounded-3 h-100 shadow-sm d-flex flex-column overflow-hidden">
+                    <div class="flex-grow-1 p-4">
                         <div class="d-flex justify-content-between align-items-start mb-2">
-                            <span class="badge bg-success-subtle text-success border">{{ disease.affected_fruit.fruit_name }}</span>
+                            <span class="badge bg-success-subtle text-success border border-success-subtle">{{ disease.affected_fruit.fruit_name }}</span>
                             <span class="badge {% if disease.severity == 'high' or disease.severity == 'critical' %}badge-severity-high{% elif disease.severity == 'moderate' %}badge-severity-moderate{% elif disease.severity == 'healthy' %}badge-severity-healthy{% else %}badge-severity-low{% endif %}">
                                 {{ disease.get_severity_display }}
                             </span>
                         </div>
-                        <h5 class="card-title fw-bold {% if disease.is_healthy %}text-success{% else %}text-danger-emphasis{% endif %} mb-1">
+                        <h5 class="fw-bold {% if disease.is_healthy %}text-success{% else %}text-danger-emphasis{% endif %} mb-1">
                             {{ disease.disease_name }}
                         </h5>
                         <p class="small text-muted mb-3 fst-italic">
@@ -89,9 +89,9 @@
                             </div>
                         </div>
                     </div>
-                    <div class="card-footer bg-white border-top p-3 d-flex justify-content-between align-items-center">
+                    <div class="border-top p-3 bg-light-subtle d-flex justify-content-between align-items-center">
                         <span class="small text-muted font-monospace">{{ disease.code_name }}</span>
-                        <a href="{% url 'diseases:disease_detail' disease.pk %}" class="btn btn-sm btn-agro">
+                        <a href="{% url 'diseases:disease_detail' disease.pk %}" class="btn btn-sm btn-theme-green">
                             Full Profile &rarr;
                         </a>
                     </div>

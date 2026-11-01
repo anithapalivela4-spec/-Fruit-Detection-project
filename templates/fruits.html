@@ -14,7 +14,7 @@
         </div>
         {% if user.is_authenticated and user.profile.is_expert %}
             <div class="mt-2 mt-md-0">
-                <a href="{% url 'fruits:fruit_create' %}" class="btn btn-agro btn-sm">
+                <a href="{% url 'fruits:fruit_create' %}" class="btn btn-theme-green btn-sm">
                     <i class="fa-solid fa-plus me-1"></i> Add New Fruit
                 </a>
             </div>
@@ -22,15 +22,15 @@
     </div>
 
     <!-- Search Bar -->
-    <div class="card card-agro p-3 mb-4 shadow-sm">
+    <div class="bg-white border rounded-3 p-3 mb-4 shadow-sm">
         <form method="get" class="d-flex gap-2">
             <div class="input-group">
-                <span class="input-group-text"><i class="fa-solid fa-magnifying-glass"></i></span>
+                <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-magnifying-glass text-muted"></i></span>
                 <input type="text" name="q" class="form-control" placeholder="Search fruit by common name, scientific name..." value="{{ query }}">
             </div>
-            <button type="submit" class="btn btn-agro px-4">Search</button>
+            <button type="submit" class="btn btn-theme-green px-4">Search</button>
             {% if query %}
-                <a href="{% url 'fruits:fruit_list' %}" class="btn btn-outline-secondary">Clear</a>
+                <a href="{% url 'fruits:fruit_list' %}" class="btn btn-theme-outline">Clear</a>
             {% endif %}
         </form>
     </div>
@@ -39,10 +39,10 @@
     <div class="row g-4">
         {% for fruit in fruits %}
             <div class="col-md-6 col-lg-4">
-                <div class="card card-agro h-100 shadow-sm d-flex flex-column">
-                    <div class="card-body flex-grow-1 p-4">
+                <div class="bg-white border rounded-3 h-100 shadow-sm d-flex flex-column overflow-hidden">
+                    <div class="flex-grow-1 p-4">
                         <div class="d-flex justify-content-between align-items-start mb-2">
-                            <h4 class="fw-bold text-success mb-0">{{ fruit.fruit_name }}</h4>
+                            <h4 class="fw-bold mb-0" style="color: var(--theme-green);">{{ fruit.fruit_name }}</h4>
                             <span class="badge bg-light text-dark border">{{ fruit.total_diseases }} Pathologies</span>
                         </div>
                         <h6 class="card-subtitle text-muted fst-italic mb-3">{{ fruit.scientific_name }}</h6>
@@ -57,9 +57,9 @@
                             <div class="mt-1"><strong>Soil Preference:</strong> {{ fruit.soil_type }}</div>
                         </div>
                     </div>
-                    <div class="card-footer bg-white border-top p-3 d-flex justify-content-between align-items-center">
-                        <span class="badge bg-success-subtle text-success">{{ fruit.get_growth_stage_display }}</span>
-                        <a href="{% url 'fruits:fruit_detail' fruit.pk %}" class="btn btn-sm btn-agro">
+                    <div class="border-top p-3 bg-light-subtle d-flex justify-content-between align-items-center">
+                        <span class="badge bg-success-subtle text-success border border-success-subtle">{{ fruit.get_growth_stage_display }}</span>
+                        <a href="{% url 'fruits:fruit_detail' fruit.pk %}" class="btn btn-sm btn-theme-green">
                             Explore Fruit &rarr;
                         </a>
                     </div>

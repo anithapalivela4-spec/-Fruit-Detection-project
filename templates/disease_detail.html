@@ -29,7 +29,7 @@
                     </a>
                 {% endif %}
             {% endif %}
-            <a href="{% url 'detection:detect' %}" class="btn btn-warning text-dark fw-bold btn-sm shadow-sm">
+            <a href="{% url 'detection:detect' %}" class="btn btn-theme-green btn-sm shadow-sm">
                 <i class="fa-solid fa-camera-retro me-1"></i> Test Specimen
             </a>
         </div>
@@ -38,15 +38,15 @@
     <!-- Disease Profile Cards -->
     <div class="row g-4 mb-4">
         <div class="col-lg-8">
-            <div class="card card-agro p-4 shadow-sm h-100">
-                <h5 class="fw-bold text-success mb-2">Phytopathological Overview</h5>
+            <div class="bg-white border rounded-3 p-4 shadow-sm h-100">
+                <h5 class="fw-bold mb-2" style="color: var(--theme-green);">Phytopathological Overview</h5>
                 <p class="text-secondary leading-relaxed mb-4">{{ disease.description }}</p>
 
                 <div class="row g-3">
                     <div class="col-sm-6">
                         <div class="p-3 bg-light rounded-3">
                             <strong class="d-block text-dark small">Host Fruit:</strong>
-                            <a href="{% url 'fruits:fruit_detail' disease.affected_fruit.pk %}" class="text-success fw-bold">
+                            <a href="{% url 'fruits:fruit_detail' disease.affected_fruit.pk %}" class="fw-bold" style="color: var(--theme-green);">
                                 {{ disease.affected_fruit.fruit_name }}
                             </a>
                         </div>
@@ -82,7 +82,7 @@
         </div>
 
         <div class="col-lg-4">
-            <div class="card card-agro p-4 shadow-sm h-100 text-center bg-light">
+            <div class="bg-white border rounded-3 p-4 shadow-sm h-100 text-center bg-light">
                 <i class="fa-solid {% if disease.is_healthy %}fa-heart text-success{% else %}fa-biohazard text-danger{% endif %} fa-4x mb-3"></i>
                 <h4 class="fw-bold">{{ disease.disease_name }}</h4>
                 <div class="p-3 bg-white rounded-3 border text-start mb-3 small">
@@ -91,7 +91,7 @@
                     <div class="mt-1"><strong>Symptoms Linked:</strong> {{ disease.symptoms.count }}</div>
                     <div class="mt-1"><strong>Treatments Linked:</strong> {{ disease.treatments.count }}</div>
                 </div>
-                <a href="{% url 'api_ontology' %}?disease={{ disease.disease_name }}" target="_blank" class="btn btn-outline-info w-100 btn-sm mb-2">
+                <a href="{% url 'api_ontology' %}?disease={{ disease.disease_name }}" target="_blank" class="btn btn-theme-outline w-100 btn-sm mb-2">
                     <i class="fa-solid fa-code me-1"></i> Query in SPARQL API
                 </a>
             </div>
@@ -102,16 +102,16 @@
     <div class="row g-4 mb-4">
         <!-- Symptoms -->
         <div class="col-md-4">
-            <div class="card card-agro h-100 shadow-sm">
-                <div class="card-header card-header-agro py-3">
-                    <h5 class="fw-bold mb-0 text-success">
+            <div class="bg-white border rounded-3 h-100 shadow-sm overflow-hidden">
+                <div class="px-4 py-3 border-bottom bg-light">
+                    <h5 class="fw-bold mb-0" style="color: var(--theme-green);">
                         <i class="fa-solid fa-notes-medical me-2 text-danger"></i> Clinical Symptoms ({{ disease.symptoms.count }})
                     </h5>
                 </div>
-                <div class="card-body p-3">
+                <div class="p-3">
                     <div class="list-group list-group-flush">
                         {% for s in disease.symptoms.all %}
-                            <div class="list-group-item px-0 py-2">
+                            <div class="list-group-item px-0 py-2 border-0 border-bottom">
                                 <strong class="d-block text-dark">{{ s.name }}</strong>
                                 <span class="small text-muted">{{ s.visual_characteristics|default:s.description|truncatewords:10 }}</span>
                             </div>
@@ -125,16 +125,16 @@
 
         <!-- Treatments -->
         <div class="col-md-4">
-            <div class="card card-agro h-100 shadow-sm">
-                <div class="card-header card-header-agro py-3">
-                    <h5 class="fw-bold mb-0 text-success">
+            <div class="bg-white border rounded-3 h-100 shadow-sm overflow-hidden">
+                <div class="px-4 py-3 border-bottom bg-light">
+                    <h5 class="fw-bold mb-0" style="color: var(--theme-green);">
                         <i class="fa-solid fa-hand-holding-medical me-2 text-primary"></i> Treatments &amp; Care ({{ disease.treatments.count }})
                     </h5>
                 </div>
-                <div class="card-body p-3">
+                <div class="p-3">
                     <div class="list-group list-group-flush">
                         {% for t in disease.treatments.all %}
-                            <div class="list-group-item px-0 py-2">
+                            <div class="list-group-item px-0 py-2 border-0 border-bottom">
                                 <span class="badge bg-primary-subtle text-primary border mb-1">{{ t.get_category_display }}</span>
                                 <strong class="d-block text-dark">{{ t.title }}</strong>
                                 <span class="small text-muted">{{ t.description|truncatewords:12 }}</span>
@@ -149,16 +149,16 @@
 
         <!-- Preventions -->
         <div class="col-md-4">
-            <div class="card card-agro h-100 shadow-sm">
-                <div class="card-header card-header-agro py-3">
-                    <h5 class="fw-bold mb-0 text-success">
+            <div class="bg-white border rounded-3 h-100 shadow-sm overflow-hidden">
+                <div class="px-4 py-3 border-bottom bg-light">
+                    <h5 class="fw-bold mb-0" style="color: var(--theme-green);">
                         <i class="fa-solid fa-shield-halved me-2 text-success"></i> Prevention ({{ disease.preventions.count }})
                     </h5>
                 </div>
-                <div class="card-body p-3">
+                <div class="p-3">
                     <div class="list-group list-group-flush">
                         {% for p in disease.preventions.all %}
-                            <div class="list-group-item px-0 py-2">
+                            <div class="list-group-item px-0 py-2 border-0 border-bottom">
                                 <strong class="d-block text-dark">{{ p.title }}</strong>
                                 <span class="small text-muted">{{ p.description|truncatewords:12 }}</span>
                             </div>

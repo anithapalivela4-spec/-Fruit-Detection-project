@@ -20,19 +20,29 @@ class RegisterView(View):
     def post(self, request):
         form = UserRegistrationForm(request.POST)
         if form.is_valid():
-            username = form.cleaned_data['username']
-            email = form.cleaned_data['email']
+            full_name = form.cleaned_data['full_name'].strip()
+            email = form.cleaned_data['email'].strip().lower()
             password = form.cleaned_data['password']
-            first_name = form.cleaned_data['first_name']
-            last_name = form.cleaned_data['last_name']
-            role = form.cleaned_data['role']
-            phone = form.cleaned_data.get('phone', '')
-            farm_location = form.cleaned_data.get('farm_location', '')
 
-            if User.objects.filter(username=username).exists():
-                messages.error(request, "Username is already taken. Please choose another.")
+            # Check duplicate email
+            if User.objects.filter(email__iexact=email).exists():
+                messages.error(request, "An account with this email address already exists. Please login instead.")
                 return render(request, 'register.html', {'form': form})
 
+            # Split full name into first and last name
+            name_parts = full_name.split(' ', 1)
+            first_name = name_parts[0]
+            last_name = name_parts[1] if len(name_parts) > 1 else ''
+
+            # Generate unique username from email
+            base_username = email.split('@')[0]
+            username = base_username
+            counter = 1
+            while User.objects.filter(username__iexact=username).exists():
+                username = f"{base_username}{counter}"
+                counter += 1
+
+            # Securely store user with hashed password
             user = User.objects.create_user(
                 username=username,
                 email=email,
@@ -40,16 +50,17 @@ class RegisterView(View):
                 first_name=first_name,
                 last_name=last_name
             )
-            # Update created profile
-            profile = user.profile
-            profile.role = role
-            profile.phone = phone
-            profile.farm_location = farm_location
+
+            # Ensure associated UserProfile exists
+            profile, _ = UserProfile.objects.get_or_create(user=user)
+            profile.role = 'farmer'
             profile.save()
 
-            messages.success(request, f"Welcome {username}! Your account has been registered successfully. Please log in.")
+            messages.success(request, f"Registration successful for {full_name}! Please login with your email and password.")
+            # Automatically redirect user to LOGIN PAGE (do not open dashboard directly)
             return redirect('accounts:login')
-        return render(request, 'register.html', {'form': form})
+        else:
+            return render(request, 'register.html', {'form': form})
 
 
 class LoginView(View):
@@ -62,17 +73,20 @@ class LoginView(View):
     def post(self, request):
         form = UserLoginForm(request.POST)
         if form.is_valid():
-            login_id = form.cleaned_data['username']
+            login_id = form.cleaned_data['email'].strip()
             password = form.cleaned_data['password']
 
-            # Allow login with either username or email
-            user = authenticate(request, username=login_id, password=password)
-            if user is None:
-                try:
-                    user_obj = User.objects.get(email=login_id)
+            # Verify credentials from database (supports registered email or username)
+            user = None
+            try:
+                user_obj = User.objects.filter(email__iexact=login_id).first()
+                if user_obj:
                     user = authenticate(request, username=user_obj.username, password=password)
-                except User.DoesNotExist:
-                    user = None
+            except Exception:
+                user = None
+
+            if user is None:
+                user = authenticate(request, username=login_id, password=password)
 
             if user is not None:
                 login(request, user)
@@ -80,19 +94,20 @@ class LoginView(View):
                 next_url = request.GET.get('next')
                 if next_url:
                     return redirect(next_url)
-                if user.is_superuser or (hasattr(user, 'profile') and user.profile.is_admin):
-                    return redirect('detection:admin_dashboard')
+                # Redirect user to DASHBOARD
                 return redirect('dashboard')
             else:
-                messages.error(request, "Invalid username/email or password.")
+                messages.error(request, "Invalid email or password. Please verify your credentials and try again.")
+        else:
+            messages.error(request, "Please enter both email and password.")
         return render(request, 'login.html', {'form': form})
 
 
 @login_required
 def logout_view(request):
     logout(request)
-    messages.info(request, "You have been logged out successfully.")
-    return redirect('home')
+    messages.info(request, "You have been logged out successfully. Please log in to continue.")
+    return redirect('accounts:login')
 
 
 @login_required

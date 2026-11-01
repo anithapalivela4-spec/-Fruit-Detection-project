@@ -29,12 +29,31 @@ class DiagnosisEngine:
         is_mock = ml_prediction.get("is_mock", True)
         confidence = ml_prediction.get("confidence", 0.0)
 
-        # Step 2: Try resolving corresponding Django DB entities if they exist
+        # Step 2: Resolve DB entities and adjust suggestions for healthy fruits
         fruit_obj = Fruit.objects.filter(fruit_name__iexact=fruit_name).first()
-        disease_obj = Disease.objects.filter(disease_name__iexact=disease_name).first()
-        if not disease_obj and fruit_obj:
-            # Fallback search within that fruit
-            disease_obj = Disease.objects.filter(affected_fruit=fruit_obj, disease_name__icontains=disease_name.replace(fruit_name, "").strip()).first()
+        if not fruit_obj and fruit_name.lower() in ['grape', 'grapes']:
+            fruit_obj = Fruit.objects.filter(fruit_name__iexact='Grape').first()
+
+        is_healthy = ml_prediction.get("is_healthy", False) or "healthy" in disease_name.lower() or "no disease" in disease_name.lower()
+
+        if is_healthy:
+            # Use healthy Disease entry if it exists
+            disease_obj = Disease.objects.filter(affected_fruit=fruit_obj, is_healthy=True).first()
+            # Healthy care tips instead of generic treatments
+            from recommendations.healthy_care import get_healthy_care_tips
+            treatment_strings = get_healthy_care_tips(fruit_name)
+        else:
+            disease_obj = Disease.objects.filter(disease_name__iexact=disease_name).first()
+            if not disease_obj and fruit_obj:
+                # Fallback search within that fruit
+                disease_obj = Disease.objects.filter(affected_fruit=fruit_obj, disease_name__icontains=disease_name.replace(fruit_name, "").strip()).first()
+            # Normal treatment extraction
+            lookup_name = disease_name
+            categorized_treatments = get_categorized_treatments(lookup_name)
+            treatment_strings = []
+            for cat, items in categorized_treatments.items():
+                for item in items:
+                    treatment_strings.append(f"[{cat.title()}] {item['title']}: {item['description']}")
 
         # Step 3: Extract structured symptoms from ontology + DB
         symptoms_list = ontology_results.get("symptoms", [])
@@ -43,20 +62,17 @@ class DiagnosisEngine:
                 if s.name not in symptoms_list:
                     symptoms_list.append(s.name)
 
-        # Step 4: Extract treatments from recommendation engine and DB
-        categorized_treatments = get_categorized_treatments(disease_name)
-        treatment_strings = []
-        for cat, items in categorized_treatments.items():
-            for item in items:
-                treatment_strings.append(f"[{cat.title()}] {item['title']}: {item['description']}")
-        
+        # Step 4: Merge ontology treatments (treatment_strings already set in Step 2)
+        lookup_name = "Healthy" if is_healthy else disease_name
+        categorized_treatments = get_categorized_treatments(lookup_name) if not is_healthy else {}
+
         # Merge ontology treatments
         for ot in ontology_results.get("treatments", []):
             if ot not in treatment_strings:
                 treatment_strings.append(ot)
 
         # Step 5: Extract preventions
-        prevention_items = get_prevention_guidelines(disease_name, fruit_name=fruit_name)
+        prevention_items = get_prevention_guidelines(lookup_name, fruit_name=fruit_name)
         prevention_strings = [f"{p['practice']}: {p['action']}" for p in prevention_items]
         for op in ontology_results.get("prevention", []):
             if op not in prevention_strings:

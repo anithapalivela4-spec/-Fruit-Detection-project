@@ -14,12 +14,15 @@
                 Welcome back, <strong>{{ user.get_full_name|default:user.username }}</strong>! Real-time specimen diagnostics overview.
             </p>
         </div>
-        <div class="mt-2 mt-md-0">
-            <a href="{% url 'detection:detect' %}" class="btn btn-warning text-dark fw-bold px-3 shadow-sm">
-                <i class="fa-solid fa-camera-retro me-1"></i> New Specimen Detection
+        <div class="mt-2 mt-md-0 d-flex gap-2">
+            <a href="{% url 'detection:detect' %}" class="btn-theme-green btn-sm px-3 shadow-sm">
+                <i class="fa-solid fa-camera-retro me-1"></i> Detect Disease
             </a>
-            <a href="{% url 'detection:history' %}" class="btn btn-agro-outline btn-sm ms-2">
-                <i class="fa-solid fa-clock-rotate-left me-1"></i> Full History
+            <a href="{% url 'detection:history' %}" class="btn-theme-outline btn-sm">
+                <i class="fa-solid fa-clock-rotate-left me-1"></i> View History
+            </a>
+            <a href="{% url 'accounts:logout' %}" class="btn btn-outline-danger btn-sm">
+                <i class="fa-solid fa-right-from-bracket me-1"></i> Logout
             </a>
         </div>
     </div>
@@ -27,7 +30,7 @@
     <!-- Metric Counter Cards -->
     <div class="row g-3 mb-4">
         <div class="col-md-4 col-sm-6">
-            <div class="card card-agro p-3 border-start border-primary border-4 shadow-sm">
+            <div class="bg-white border rounded-3 p-3 shadow-sm border-start border-primary border-4">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
                         <div class="text-muted small fw-semibold">Total Scans Submitted</div>
@@ -41,7 +44,7 @@
         </div>
 
         <div class="col-md-4 col-sm-6">
-            <div class="card card-agro p-3 border-start border-danger border-4 shadow-sm">
+            <div class="bg-white border rounded-3 p-3 shadow-sm border-start border-danger border-4">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
                         <div class="text-muted small fw-semibold">Diseases Detected</div>
@@ -55,7 +58,7 @@
         </div>
 
         <div class="col-md-4 col-sm-6">
-            <div class="card card-agro p-3 border-start border-success border-4 shadow-sm">
+            <div class="bg-white border rounded-3 p-3 shadow-sm border-start border-success border-4">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
                         <div class="text-muted small fw-semibold">Healthy Fruit Results</div>
@@ -72,21 +75,21 @@
     <!-- Analytics Chart & Diagnostics Overview -->
     <div class="row g-4 mb-4">
         <div class="col-lg-7">
-            <div class="card card-agro h-100 shadow-sm">
-                <div class="card-header card-header-agro py-3 d-flex justify-content-between align-items-center">
-                    <h5 class="fw-bold mb-0 text-success">
+            <div class="bg-white border rounded-3 h-100 shadow-sm overflow-hidden">
+                <div class="px-4 py-3 border-bottom d-flex justify-content-between align-items-center bg-light">
+                    <h5 class="fw-bold mb-0" style="color: var(--theme-green);">
                         <i class="fa-solid fa-chart-column me-2"></i> Disease Occurrence Breakdown
                     </h5>
                     <span class="badge bg-secondary small">Distribution</span>
                 </div>
-                <div class="card-body p-4">
+                <div class="p-4">
                     {% if total_predictions > 0 %}
                         <canvas id="diseaseChart" height="150"></canvas>
                     {% else %}
                         <div class="text-center py-5 text-muted">
                             <i class="fa-solid fa-chart-pie fa-3x mb-3 text-secondary opacity-50"></i>
                             <p class="mb-2">No prediction analytics recorded yet.</p>
-                            <a href="{% url 'detection:detect' %}" class="btn btn-sm btn-agro">Upload Your First Specimen</a>
+                            <a href="{% url 'detection:detect' %}" class="btn btn-sm btn-theme-green">Upload Your First Specimen</a>
                         </div>
                     {% endif %}
                 </div>
@@ -94,13 +97,13 @@
         </div>
 
         <div class="col-lg-5">
-            <div class="card card-agro h-100 shadow-sm">
-                <div class="card-header card-header-agro py-3">
-                    <h5 class="fw-bold mb-0 text-success">
+            <div class="bg-white border rounded-3 h-100 shadow-sm overflow-hidden">
+                <div class="px-4 py-3 border-bottom bg-light">
+                    <h5 class="fw-bold mb-0" style="color: var(--theme-green);">
                         <i class="fa-solid fa-lightbulb me-2"></i> Agricultural Care Highlights
                     </h5>
                 </div>
-                <div class="card-body p-4">
+                <div class="p-4">
                     <div class="d-flex align-items-start mb-3">
                         <i class="fa-solid fa-droplet text-primary me-3 mt-1 fs-5"></i>
                         <div>
@@ -128,14 +131,14 @@
     </div>
 
     <!-- Recent Predictions Table -->
-    <div class="card card-agro shadow-sm">
-        <div class="card-header card-header-agro py-3 d-flex justify-content-between align-items-center">
-            <h5 class="fw-bold mb-0 text-success">
+    <div class="bg-white border rounded-3 shadow-sm overflow-hidden">
+        <div class="px-4 py-3 border-bottom d-flex justify-content-between align-items-center bg-light">
+            <h5 class="fw-bold mb-0" style="color: var(--theme-green);">
                 <i class="fa-solid fa-clock-rotate-left me-2"></i> Recent Specimen Predictions
             </h5>
-            <a href="{% url 'detection:history' %}" class="btn btn-sm btn-agro-outline">View All &rarr;</a>
+            <a href="{% url 'detection:history' %}" class="btn btn-sm btn-theme-outline">View All &rarr;</a>
         </div>
-        <div class="card-body p-0">
+        <div>
             <div class="table-responsive">
                 <table class="table table-hover align-middle mb-0">
                     <thead class="table-light">
@@ -186,7 +189,7 @@
                                 </td>
                                 <td class="small text-muted">{{ p.created_at|date:"M d, Y H:i" }}</td>
                                 <td class="text-end">
-                                    <a href="{% url 'detection:result' p.pk %}" class="btn btn-sm btn-agro">
+                                    <a href="{% url 'detection:result' p.pk %}" class="btn btn-sm btn-theme-green">
                                         <i class="fa-solid fa-file-lines me-1"></i> View Result
                                     </a>
                                 </td>

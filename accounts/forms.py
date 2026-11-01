@@ -2,57 +2,81 @@ from django import forms
 from django.contrib.auth.models import User
 from .models import UserProfile
 
-class UserRegistrationForm(forms.ModelForm):
+class UserRegistrationForm(forms.Form):
+    full_name = forms.CharField(
+        max_length=150,
+        required=True,
+        label="Full Name",
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Enter your full name',
+            'id': 'reg-full-name'
+        })
+    )
+    email = forms.EmailField(
+        required=True,
+        label="Email Address",
+        widget=forms.EmailInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Enter valid email (e.g. name@example.com)',
+            'id': 'reg-email'
+        })
+    )
     password = forms.CharField(
-        widget=forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Enter strong password'}),
-        label="Password"
+        min_length=6,
+        required=True,
+        label="Password",
+        widget=forms.PasswordInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Enter secure password (min 6 characters)',
+            'id': 'reg-password'
+        })
     )
     confirm_password = forms.CharField(
-        widget=forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Confirm password'}),
-        label="Confirm Password"
-    )
-    role = forms.ChoiceField(
-        choices=UserProfile.ROLE_CHOICES,
-        widget=forms.Select(attrs={'class': 'form-select'}),
-        initial='farmer',
-        label="User Role"
-    )
-    farm_location = forms.CharField(
-        required=False,
-        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g., Nashik, Maharashtra'}),
-        label="Location / Region"
-    )
-    phone = forms.CharField(
-        required=False,
-        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g., +91 9876543210'}),
-        label="Phone Number"
+        required=True,
+        label="Confirm Password",
+        widget=forms.PasswordInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Re-enter password to confirm',
+            'id': 'reg-confirm-password'
+        })
     )
 
-    class Meta:
-        model = User
-        fields = ['username', 'email', 'first_name', 'last_name']
-        widgets = {
-            'username': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Choose username'}),
-            'email': forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'user@example.com'}),
-            'first_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'First Name'}),
-            'last_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Last Name'}),
-        }
+    def clean_email(self):
+        email = self.cleaned_data.get('email', '').strip().lower()
+        if not email:
+            raise forms.ValidationError("Email address is required.")
+        if User.objects.filter(email__iexact=email).exists():
+            raise forms.ValidationError("An account with this email address already exists. Please login instead.")
+        return email
 
     def clean(self):
         cleaned_data = super().clean()
-        p1 = cleaned_data.get("password")
-        p2 = cleaned_data.get("confirm_password")
-        if p1 and p2 and p1 != p2:
-            self.add_error('confirm_password', "Passwords do not match.")
+        password = cleaned_data.get("password")
+        confirm_password = cleaned_data.get("confirm_password")
+        if password and confirm_password and password != confirm_password:
+            self.add_error('confirm_password', "Passwords do not match. Please re-enter identical passwords.")
         return cleaned_data
 
 
 class UserLoginForm(forms.Form):
-    username = forms.CharField(
-        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Username or Email'})
+    email = forms.CharField(
+        required=True,
+        label="Email Address or Username",
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Enter your registered email or username',
+            'id': 'login-email'
+        })
     )
     password = forms.CharField(
-        widget=forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Password'})
+        required=True,
+        label="Password",
+        widget=forms.PasswordInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Enter password',
+            'id': 'login-password'
+        })
     )
 
 
