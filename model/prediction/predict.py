@@ -12,11 +12,11 @@ Performs:
 import os
 import logging
 from pathlib import Path
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, Tuple
 
 import cv2
 import numpy as np
-from PIL import Image
+from PIL import Image, ImageOps
 
 from ..preprocessing.resize import resize_image
 from ..preprocessing.normalization import normalize_image
@@ -146,124 +146,155 @@ class FruitDiseasePredictor:
     def predict(self, image_input, selected_fruit_hint: Optional[str] = None) -> Dict[str, Any]:
         """
         Main analysis pipeline:
-        1. Reads and validates the uploaded image.
-        2. Evaluates clarity/blankness.
-        3. Executes CNN inference using fruit_disease_model.h5.
-        4. Handles low confidence / unsupported images according to project rules.
-        5. Formats prediction conforming strictly to:
-           - Healthy: Fruit + Healthy + "No disease detected"
-           - Diseased: Fruit + Diseased + actual disease name
+        1. Reads and decodes image supporting JPG, JPEG, PNG, WEBP, RGBA/RGB.
+        2. Applies EXIF rotation for mobile/digital camera photos.
+        3. Composites alpha transparency onto solid white background.
+        4. Validates genuine image quality (sharpness vs genuine blur, blank/solid color).
+        5. Performs CNN inference with exact preprocessing (224x224, [-1, 1] normalization).
+        6. Identifies fruit crop first (hierarchical aggregation), then predicts disease vs healthy.
+        7. Returns actual model probability as confidence (capped at 99.9%, never 100.0%).
+        8. Returns 'Uncertain – Please upload a clearer image' if confidence is below reliable threshold.
         """
-        # Read image to numpy/PIL
+        # 1. Read and decode image with Pillow & OpenCV
         try:
             if isinstance(image_input, (str, Path)):
-                img_bgr = cv2.imread(str(image_input))
-                if img_bgr is None:
-                    pil_img = Image.open(str(image_input)).convert('RGB')
-                    img_bgr = cv2.cvtColor(np.array(pil_img), cv2.COLOR_RGB2BGR)
+                with Image.open(str(image_input)) as p_img:
+                    p_img = ImageOps.exif_transpose(p_img)
+                    if p_img.mode in ('RGBA', 'LA') or (p_img.mode == 'P' and 'transparency' in p_img.info):
+                        rgba = p_img.convert('RGBA')
+                        bg = Image.new('RGBA', rgba.size, (255, 255, 255, 255))
+                        p_img = Image.alpha_composite(bg, rgba).convert('RGB')
+                    elif p_img.mode != 'RGB':
+                        p_img = p_img.convert('RGB')
+                    img_rgb = np.array(p_img)
             elif hasattr(image_input, 'read'):
-                pil_img = Image.open(image_input).convert('RGB')
-                img_bgr = cv2.cvtColor(np.array(pil_img), cv2.COLOR_RGB2BGR)
+                image_input.seek(0)
+                with Image.open(image_input) as p_img:
+                    p_img = ImageOps.exif_transpose(p_img)
+                    if p_img.mode in ('RGBA', 'LA') or (p_img.mode == 'P' and 'transparency' in p_img.info):
+                        rgba = p_img.convert('RGBA')
+                        bg = Image.new('RGBA', rgba.size, (255, 255, 255, 255))
+                        p_img = Image.alpha_composite(bg, rgba).convert('RGB')
+                    elif p_img.mode != 'RGB':
+                        p_img = p_img.convert('RGB')
+                    img_rgb = np.array(p_img)
             elif isinstance(image_input, Image.Image):
-                pil_img = image_input.convert('RGB')
-                img_bgr = cv2.cvtColor(np.array(pil_img), cv2.COLOR_RGB2BGR)
+                p_img = ImageOps.exif_transpose(image_input)
+                if p_img.mode in ('RGBA', 'LA') or (p_img.mode == 'P' and 'transparency' in p_img.info):
+                    rgba = p_img.convert('RGBA')
+                    bg = Image.new('RGBA', rgba.size, (255, 255, 255, 255))
+                    p_img = Image.alpha_composite(bg, rgba).convert('RGB')
+                elif p_img.mode != 'RGB':
+                    p_img = p_img.convert('RGB')
+                img_rgb = np.array(p_img)
             elif isinstance(image_input, np.ndarray):
-                img_bgr = image_input if len(image_input.shape) == 3 else cv2.cvtColor(image_input, cv2.COLOR_GRAY2BGR)
+                if len(image_input.shape) == 2:
+                    img_rgb = cv2.cvtColor(image_input, cv2.COLOR_GRAY2RGB)
+                elif image_input.shape[2] == 4:
+                    pil_temp = Image.fromarray(image_input)
+                    bg = Image.new('RGBA', pil_temp.size, (255, 255, 255, 255))
+                    img_rgb = np.array(Image.alpha_composite(bg, pil_temp).convert('RGB'))
+                else:
+                    img_rgb = image_input
             else:
                 return {
                     "unsupported": True,
-                    "message": "Unsupported image format. Please upload a standard JPG or PNG photo."
+                    "message": "Unsupported image format. Please upload a standard JPG, JPEG, PNG, or WebP photo."
                 }
         except Exception as e:
-            logger.error("Failed to read image: %s", e)
+            logger.error("Failed to decode image: %s", e)
             return {
                 "unsupported": True,
-                "message": "The uploaded file could not be decoded as an image. Please upload a valid JPG or PNG photo."
+                "message": f"The uploaded file could not be decoded as a valid image: {e}"
             }
 
-        # Check blank / unreadable image
+        img_bgr = cv2.cvtColor(img_rgb, cv2.COLOR_RGB2BGR)
         gray = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2GRAY)
-        if gray.mean() < 2.0 and not selected_fruit_hint:
+
+        # 2. Check blank or pitch black
+        if gray.mean() < 2.0:
             return {
                 "unsupported": True,
                 "message": "The uploaded image is blank or pitch black. Please upload a clear photo of a fruit or leaf specimen."
             }
+
+        # 3. Check untextured / solid canvas or blurry when auto-detecting without explicit hint
+        if not selected_fruit_hint:
+            if float(np.std(gray)) < 2.5:
+                return {
+                    "unsupported": True,
+                    "message": "The uploaded image is blank or lacks visual content. Please upload a clear photo of a fruit or leaf specimen."
+                }
+
+            h, w = gray.shape[:2]
+            if h >= 100 and w >= 100:
+                laplacian_var = float(cv2.Laplacian(gray, cv2.CV_64F).var())
+                if laplacian_var < 12.0:
+                    return {
+                        "unsupported": True,
+                        "message": "Image is blurry. Please upload a clearer, in-focus photo of the fruit or leaf specimen."
+                    }
 
         # -------------------------------------------------------------
         # Deep Learning CNN Model Prediction
         # -------------------------------------------------------------
         if not self.is_mock and self.model is not None:
             try:
-                # 1. Botanical Domain Check (Reject cars, cats, electronic equipment, etc.)
-                is_supported_domain, domain_reason = self._check_botanical_domain(img_bgr)
-                if not is_supported_domain and not selected_fruit_hint:
-                    return {
-                        "unsupported": True,
-                        "message": "Unsupported or unrecognized image. Please upload a clear photo of Banana, Apple, Tomato, Grape, Orange, or Mango."
-                    }
-
-                img_rgb = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2RGB)
-                resized = cv2.resize(img_rgb, (224, 224))
+                # Preprocessing matching MobileNetV2:
+                # Bilinear resize to 224x224, scale [0, 255] to [-1.0, 1.0]
+                resized = cv2.resize(img_rgb, (224, 224), interpolation=cv2.INTER_LINEAR)
                 norm_tensor = (resized.astype(np.float32) / 127.5) - 1.0
                 norm_tensor = np.expand_dims(norm_tensor, axis=0)
 
                 raw_preds = self.model.predict(norm_tensor, verbose=0)[0]
-                best_idx = int(np.argmax(raw_preds))
-                cnn_conf = float(raw_preds[best_idx] * 100.0)
 
-                # 2. Low confidence rule
-                if cnn_conf < 65.0 and not selected_fruit_hint:
-                    return {
-                        "unsupported": True,
-                        "message": f"Unable to identify confidently (confidence is {cnn_conf:.1f}%). Please upload a clearer image."
-                    }
+                # Hierarchical Fruit Identification:
+                # Sum probabilities across classes for each supported fruit
+                fruit_probs = {}
+                for i, cls in enumerate(CLASS_LABELS):
+                    f = cls["fruit"]
+                    fruit_probs[f] = fruit_probs.get(f, 0.0) + float(raw_preds[i])
 
-                pred_class = CLASS_LABELS[best_idx]
-                final_fruit = pred_class["fruit"]
+                if selected_fruit_hint and selected_fruit_hint.strip() in FRUIT_DISEASE_MAPPINGS:
+                    final_fruit = selected_fruit_hint.strip()
+                    fruit_prob = fruit_probs.get(final_fruit, 1.0)
+                else:
+                    final_fruit = max(fruit_probs, key=fruit_probs.get)
+                    fruit_prob = fruit_probs[final_fruit]
+
+                # Disambiguate Banana vs Grape if ambiguous and no explicit hint
+                if final_fruit in ["Banana", "Grape"] and not selected_fruit_hint:
+                    final_fruit = self._disambiguate_banana_grape(img_bgr, final_fruit, raw_preds)
+
+                # Within the identified fruit, determine disease vs healthy
+                fruit_indices = [i for i, c in enumerate(CLASS_LABELS) if c["fruit"] == final_fruit]
+                if not fruit_indices:
+                    best_sub_idx = int(np.argmax(raw_preds))
+                else:
+                    best_sub_idx = max(fruit_indices, key=lambda i: raw_preds[i])
+
+                pred_class = CLASS_LABELS[best_sub_idx]
                 is_healthy = pred_class["healthy"]
                 raw_disease = pred_class["disease"]
 
-                # 3. Fruit Chromatic & Consistency Verification
-                if not selected_fruit_hint:
-                    is_consistent = self._check_fruit_consistency(img_bgr, final_fruit)
-                    if not is_consistent:
-                        # Check second best prediction
-                        sorted_indices = np.argsort(raw_preds)[::-1]
-                        second_idx = int(sorted_indices[1])
-                        second_conf = float(raw_preds[second_idx] * 100.0)
-                        second_class = CLASS_LABELS[second_idx]
-                        if second_conf >= 25.0 and self._check_fruit_consistency(img_bgr, second_class["fruit"]):
-                            pred_class = second_class
-                            final_fruit = pred_class["fruit"]
-                            is_healthy = pred_class["healthy"]
-                            raw_disease = pred_class["disease"]
-                            cnn_conf = second_conf
-                        else:
-                            return {
-                                "unsupported": True,
-                                "message": "Unsupported or unrecognized image. Please upload a clear photo of Banana, Apple, Tomato, Grape, Orange, or Mango."
-                            }
+                # Actual model probability as confidence
+                cnn_conf = float(raw_preds[best_sub_idx] * 100.0)
+                confidence = min(round(cnn_conf, 1), 99.9)
 
-                # 4. Strict Banana vs Grape Disambiguation Guarantee
-                final_fruit, is_healthy, raw_disease = self._disambiguate_banana_grape(img_bgr, final_fruit, is_healthy, raw_disease, raw_preds)
+                # Reliable Threshold Check:
+                # If the model is completely unsure (< 38.0% probability on top class or < 38% fruit probability)
+                if not selected_fruit_hint and (confidence < 38.0 or fruit_prob < 0.38):
+                    return {
+                        "unsupported": True,
+                        "uncertain": True,
+                        "message": f"Uncertain – Please upload a clearer image of a supported fruit crop (confidence was only {confidence:.1f}%)."
+                    }
 
-                # 5. Healthy vs Diseased Verification (prevent false diseased classification on clean fruits)
-                if not is_healthy and not selected_fruit_hint:
-                    has_lesions = self._has_necrotic_lesion_evidence(img_bgr, final_fruit)
-                    if not has_lesions:
-                        # Smooth, unblemished fruit without necrotic spots
-                        is_healthy = True
-                        raw_disease = f"{final_fruit} Healthy"
-
-                # 6. Healthy result formatting rule
+                # Formatting rule: Healthy fruit displays "No disease detected"
                 if is_healthy:
                     final_disease = "No disease detected"
                 else:
                     final_disease = raw_disease
-
-                confidence = round(cnn_conf, 1)
-                if confidence >= 100.0:
-                    confidence = 99.8
 
                 return {
                     "fruit": final_fruit,
@@ -280,147 +311,46 @@ class FruitDiseasePredictor:
         # Fallback to demonstration predictor if model is absent
         return self._fallback_prediction(img_bgr, selected_fruit_hint)
 
-    def _check_botanical_domain(self, img_bgr: np.ndarray) -> Tuple[bool, str]:
+    def _disambiguate_banana_grape(self, img_bgr: np.ndarray, fruit: str, raw_preds: np.ndarray) -> str:
         """
-        Validates whether the image contains chromatic profiles characteristic of
-        botanical plant/fruit specimens (chlorophyll, carotenoids, anthocyanins).
+        Morphological verification to ensure Banana and Grape are not confused:
+        Banana: Elongated curved single body (aspect ratio > 2.0).
+        Grape: Multiple circular/clustered berries (aspect ratio < 1.35 and clustered contours).
         """
-        hsv = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2HSV)
-        h, s, v = hsv[:, :, 0], hsv[:, :, 1], hsv[:, :, 2]
+        try:
+            gray = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2GRAY)
+            blurred = cv2.GaussianBlur(gray, (5, 5), 0)
+            _, thresh = cv2.threshold(blurred, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
+            contours, _ = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
-        m_red = ((h <= 12) | (h >= 160)) & (s >= 35) & (v >= 30)
-        m_orange = (h > 12) & (h <= 26) & (s >= 35) & (v >= 30)
-        m_yellow = (h > 26) & (h <= 38) & (s >= 25) & (v >= 35)
-        m_green = (h > 38) & (h <= 88) & (s >= 18) & (v >= 18)
-        m_purple = ((h >= 100) & (h <= 175) & (s >= 10)) | ((v < 65) & (s > 10))
-
-        plant_mask = m_red | m_orange | m_yellow | m_green | m_purple
-        total_pixels = img_bgr.shape[0] * img_bgr.shape[1]
-        chroma_ratio = float(np.sum(plant_mask)) / total_pixels
-
-        # Check central region of the image
-        ch, cw = img_bgr.shape[:2]
-        center = plant_mask[int(ch * 0.15):int(ch * 0.85), int(cw * 0.15):int(cw * 0.85)]
-        center_ratio = float(np.mean(center)) if center.size > 0 else 0.0
-
-        if chroma_ratio < 0.05 and center_ratio < 0.08:
-            return False, "insufficient plant chromatic spectrum"
-
-        # Check for non-fruit metallic/grayscale dominance
-        gray_mask = (s < 18) & (v > 25) & (v < 235)
-        gray_ratio = float(np.sum(gray_mask)) / total_pixels
-        if gray_ratio > 0.88 and center_ratio < 0.12:
-            return False, "grayscale or metallic dominance"
-
-        return True, "valid botanical domain"
-
-    def _check_fruit_consistency(self, img_bgr: np.ndarray, fruit_name: str) -> bool:
-        """
-        Confirms that the visual color distribution is botanically plausible for the predicted fruit.
-        """
-        hsv = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2HSV)
-        h, s, v = hsv[:, :, 0], hsv[:, :, 1], hsv[:, :, 2]
-        total_pixels = img_bgr.shape[0] * img_bgr.shape[1]
-
-        m_red = ((h <= 14) | (h >= 160)) & (s >= 30) & (v >= 25)
-        m_orange = (h > 12) & (h <= 26) & (s >= 35) & (v >= 30)
-        m_yellow = (h > 24) & (h <= 38) & (s >= 25) & (v >= 30)
-        m_green = (h > 38) & (h <= 90) & (s >= 15) & (v >= 15)
-
-        if fruit_name == "Banana":
-            ratio = (np.sum(m_yellow) + np.sum(m_green)) / total_pixels
-            return ratio >= 0.06
-        elif fruit_name == "Orange":
-            ratio = (np.sum(m_orange) + np.sum(m_yellow) + np.sum(m_green)) / total_pixels
-            return ratio >= 0.06
-        elif fruit_name == "Tomato":
-            ratio = (np.sum(m_red) + np.sum(m_orange) + np.sum(m_green)) / total_pixels
-            return ratio >= 0.06
-        elif fruit_name == "Apple":
-            ratio = (np.sum(m_red) + np.sum(m_green) + np.sum(m_yellow)) / total_pixels
-            return ratio >= 0.05
-        elif fruit_name == "Grape":
-            m_grape = ((h >= 100) & (h <= 175) & (s >= 8)) | ((h > 35) & (h <= 90) & (s >= 10)) | ((v < 65) & (s > 8)) | m_yellow
-            ratio = float(np.sum(m_grape)) / total_pixels
-            return ratio >= 0.04
-        elif fruit_name == "Mango":
-            ratio = (np.sum(m_yellow) + np.sum(m_orange) + np.sum(m_green) + np.sum(m_red)) / total_pixels
-            return ratio >= 0.06
-
-        return True
-
-    def _disambiguate_banana_grape(self, img_bgr: np.ndarray, fruit: str, is_healthy: bool, disease: str, raw_preds: np.ndarray) -> Tuple[str, bool, str]:
-        """
-        Morphological verification to ensure Banana and Grape are NEVER confused.
-        Banana: Elongated curved cylindrical body (aspect ratio > 1.8).
-        Grape: Multiple circular/ellipsoidal clustered berries.
-        """
-        if fruit not in ["Banana", "Grape"]:
-            return fruit, is_healthy, disease
-
-        gray = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2GRAY)
-        blurred = cv2.GaussianBlur(gray, (5, 5), 0)
-        _, thresh = cv2.threshold(blurred, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
-        contours, _ = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-
-        if contours:
-            largest = max(contours, key=cv2.contourArea)
-            rect = cv2.minAreaRect(largest)
-            w, h = rect[1]
-            if w > 0 and h > 0:
-                aspect_ratio = max(w, h) / min(w, h)
-                # If predicted Banana but contours are circular cluster of berries with low aspect ratio and high circularity:
-                if fruit == "Banana" and aspect_ratio < 1.35 and len(contours) > 5:
-                    # Switch to Grape
-                    grape_idx = 4 if not is_healthy else 5
-                    return "Grape", CLASS_LABELS[grape_idx]["healthy"], CLASS_LABELS[grape_idx]["disease"]
-                # If predicted Grape but contour is highly elongated curved single body (banana):
-                elif fruit == "Grape" and aspect_ratio > 2.2:
-                    banana_idx = 8 if not is_healthy else 9
-                    return "Banana", CLASS_LABELS[banana_idx]["healthy"], CLASS_LABELS[banana_idx]["disease"]
-
-        return fruit, is_healthy, disease
-
-    def _has_necrotic_lesion_evidence(self, img_bgr: np.ndarray, fruit_name: str) -> bool:
-        """
-        Verifies presence of necrotic lesion spots before diagnosing disease,
-        preventing healthy smooth fruits from being misclassified as diseased.
-        """
-        hsv = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2HSV)
-        v = hsv[:, :, 2]
-        s = hsv[:, :, 1]
-
-        # Necrotic spots are localized dark/sunken areas with low brightness and high contrast
-        gray = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2GRAY)
-        blurred = cv2.GaussianBlur(gray, (7, 7), 0)
-        # Adaptive thresholding detects local dark spots
-        dark_spots = cv2.adaptiveThreshold(blurred, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 25, 8)
-        
-        # Filter tiny noise
-        kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
-        dark_spots = cv2.morphologyEx(dark_spots, cv2.MORPH_OPEN, kernel)
-        spot_ratio = float(np.mean(dark_spots > 0))
-
-        # A diseased fruit specimen typically has measurable necrotic lesions (between 0.8% and 25%)
-        return spot_ratio >= 0.008
+            if contours:
+                largest = max(contours, key=cv2.contourArea)
+                rect = cv2.minAreaRect(largest)
+                w, h = rect[1]
+                if w > 0 and h > 0:
+                    aspect_ratio = max(w, h) / min(w, h)
+                    if fruit == "Banana" and aspect_ratio < 1.35 and len(contours) > 5:
+                        return "Grape"
+                    elif fruit == "Grape" and aspect_ratio > 2.2:
+                        return "Banana"
+        except Exception:
+            pass
+        return fruit
 
     def _fallback_prediction(self, img_bgr: np.ndarray, selected_fruit_hint: Optional[str] = None) -> Dict[str, Any]:
         """
         Graceful fallback when model file is not available.
         Ensures clear is_mock=True flag and adheres to healthy/diseased formatting.
         """
-        # Determine target fruit
         if selected_fruit_hint and selected_fruit_hint.strip() in FRUIT_DISEASE_MAPPINGS:
             fruit = selected_fruit_hint.strip()
         else:
             fruit = "Mango"
 
-        # Check average green vs red
         b = float(np.mean(img_bgr[:, :, 0]))
         g = float(np.mean(img_bgr[:, :, 1]))
         r = float(np.mean(img_bgr[:, :, 2]))
 
-        # High green ratio indicates healthy foliage
         is_healthy = g > (r * 1.15) and g > (b * 1.15)
 
         if is_healthy:

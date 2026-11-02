@@ -1,10 +1,10 @@
 import numpy as np
-from PIL import Image
+from PIL import Image, ImageOps
 
 def resize_image(image_input, target_size=(224, 224)) -> Image.Image:
     """
     Resize input image (path, file object, or PIL Image) to target dimensions.
-    Preserves aspect ratio or performs high-quality bicubic/lanczos resampling.
+    Handles EXIF orientation and alpha/transparency safely.
     """
     if isinstance(image_input, (str, bytes)):
         img = Image.open(image_input)
@@ -17,8 +17,18 @@ def resize_image(image_input, target_size=(224, 224)) -> Image.Image:
     else:
         raise ValueError("Unsupported image input type.")
 
-    # Convert to RGB mode if RGBA or grayscale
-    if img.mode != 'RGB':
+    # Apply EXIF rotation for mobile / digital cameras
+    try:
+        img = ImageOps.exif_transpose(img)
+    except Exception:
+        pass
+
+    # Handle transparency / alpha channels (composite onto white background)
+    if img.mode in ('RGBA', 'LA') or (img.mode == 'P' and 'transparency' in img.info):
+        rgba = img.convert('RGBA')
+        white_bg = Image.new('RGBA', rgba.size, (255, 255, 255, 255))
+        img = Image.alpha_composite(white_bg, rgba).convert('RGB')
+    elif img.mode != 'RGB':
         img = img.convert('RGB')
 
-    return img.resize(target_size, Image.Resampling.LANCZOS)
+    return img.resize(target_size, Image.Resampling.BILINEAR)
