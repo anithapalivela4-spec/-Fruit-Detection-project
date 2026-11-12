@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # 🍎 Fruit Disease Detection System
 
 A full-stack **AI-powered agricultural diagnostic web application** built with Django, TensorFlow/Keras (MobileNetV2), and Semantic Web Ontology reasoning (OWL/RDF/SPARQL).
@@ -166,3 +167,6 @@ Google Generalization: 17/17 passed (100%)
 ---
 
 *Fruit Disease Detection System – Diploma Final Year Project | Built with Django + TensorFlow + Semantic Web Ontology*
+=======
+# -Fruit-Detection-project
+>>>>>>> 65c4e767d83da80eaa8f7261e62340170a7ba117
