@@ -4,6 +4,23 @@
 
 {% block content %}
 <div class="container py-4">
+
+    {% if prediction.is_mock %}
+    <!-- Mock Mode Warning Banner -->
+    <div class="alert alert-warning d-flex align-items-start gap-3 mb-4 border-warning" role="alert" style="border-left: 4px solid #f59e0b; background:#fffbeb;">
+        <i class="fa-solid fa-triangle-exclamation fa-lg text-warning mt-1"></i>
+        <div>
+            <strong>⚠️ Fallback Mode Active – CNN Model Not Loaded</strong><br>
+            <small class="text-muted">
+                The deep learning model (<code>fruit_disease_model.h5</code>) could not be loaded in this server session.
+                This result was produced by a <strong>color-analysis fallback</strong>, not the trained neural network.
+                Accuracy is significantly lower than normal.
+                <strong>Please restart the Django server</strong> from a terminal where TensorFlow is accessible to restore full CNN predictions.
+                Source: <em>{{ prediction.model_source }}</em>
+            </small>
+        </div>
+    </div>
+    {% endif %}
     <!-- Top Two Columns (Matches Screenshot 3: Specimen Left, Detection Result Right) -->
     <div class="row g-4 align-items-stretch">
         <!-- Left: Uploaded Specimen Image -->

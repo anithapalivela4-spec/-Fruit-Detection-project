@@ -1,100 +1,415 @@
 {% extends 'base.html' %}
 
-{% block title %}Fruit &amp; Disease Gallery | Fruit Disease Detection System{% endblock %}
+{% block title %}Horticultural Specimen Gallery | Fruit Disease Detection System{% endblock %}
+
+{% block extra_head %}
+<style>
+    /* Premium Agricultural Gallery Styles */
+    .gallery-stats-card {
+        background: linear-gradient(135deg, #f0fdf4 0%, #e6f7ec 100%);
+        border: 1px solid #bbf7d0;
+        border-radius: 14px;
+        padding: 1.25rem 1.5rem;
+        box-shadow: 0 2px 8px rgba(35, 122, 52, 0.06);
+    }
+    .gallery-stat-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: #ffffff;
+        border: 1px solid #d1fae5;
+        border-radius: 9999px;
+        padding: 0.4rem 1rem;
+        font-weight: 600;
+        font-size: 0.88rem;
+        color: var(--theme-green);
+        box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+    }
+    .gallery-card {
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        background: #ffffff;
+        overflow: hidden;
+        transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+    }
+    .gallery-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 24px -4px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        border-color: #86efac;
+    }
+    .gallery-img-wrapper {
+        position: relative;
+        height: 200px;
+        width: 100%;
+        overflow: hidden;
+        background: #f8fafc;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .gallery-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.4s ease;
+    }
+    .gallery-card:hover .gallery-img {
+        transform: scale(1.06);
+    }
+    .gallery-img-overlay {
+        position: absolute;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.25);
+        opacity: 0;
+        transition: opacity 0.25s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+    .gallery-card:hover .gallery-img-overlay {
+        opacity: 1;
+    }
+    .btn-quick-view {
+        background: rgba(255, 255, 255, 0.95);
+        color: #1f2937;
+        font-size: 0.8rem;
+        font-weight: 600;
+        padding: 0.4rem 0.85rem;
+        border-radius: 9999px;
+        border: none;
+        backdrop-filter: blur(4px);
+        transition: background 0.2s, transform 0.2s;
+    }
+    .btn-quick-view:hover {
+        background: #ffffff;
+        transform: scale(1.05);
+        color: var(--theme-green);
+    }
+    .badge-crop {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        background: rgba(17, 24, 39, 0.75);
+        color: #ffffff;
+        backdrop-filter: blur(4px);
+        font-weight: 600;
+        font-size: 0.75rem;
+        padding: 0.3rem 0.65rem;
+        border-radius: 6px;
+        z-index: 2;
+    }
+    .badge-status {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        font-weight: 600;
+        font-size: 0.75rem;
+        padding: 0.3rem 0.65rem;
+        border-radius: 6px;
+        z-index: 2;
+    }
+    .badge-status-healthy {
+        background: rgba(22, 101, 52, 0.9);
+        color: #ffffff;
+    }
+    .badge-status-diseased {
+        background: rgba(185, 28, 28, 0.9);
+        color: #ffffff;
+    }
+    .gallery-filter-btn {
+        border-radius: 9999px;
+        font-size: 0.85rem;
+        font-weight: 500;
+        padding: 0.35rem 0.9rem;
+        transition: all 0.2s ease;
+    }
+    .gallery-search-input {
+        border-radius: 9999px;
+        padding-left: 2.5rem;
+        border: 1px solid #d1d5db;
+        transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .gallery-search-input:focus {
+        border-color: var(--theme-green);
+        box-shadow: 0 0 0 3px rgba(35, 122, 52, 0.15);
+    }
+</style>
+{% endblock %}
 
 {% block content %}
 <div class="container py-4">
     <!-- Header -->
     <div class="page-header-center mb-4">
-        <h2 class="page-header-title">Horticultural Specimen Gallery</h2>
+        <h2 class="page-header-title">
+            <i class="fa-solid fa-seedling text-success me-2"></i>Horticultural Specimen Gallery
+        </h2>
         <p class="page-header-subtitle">
-            Visual library of healthy and diseased fruit crops, pathological signs, and symptom markers.
+            Comprehensive photographic atlas of healthy fruits, orchard clusters, and pathological symptom markers across all 9 supported crops.
         </p>
     </div>
 
-    <!-- Supported Fruits Quick Filter Strip -->
-    <div class="d-flex justify-content-center gap-2 flex-wrap mb-4">
-        <button class="btn btn-sm btn-theme-green" data-filter="all">All Crops</button>
-        <button class="btn btn-sm btn-theme-outline" data-filter="Apple">Apple</button>
-        <button class="btn btn-sm btn-theme-outline" data-filter="Mango">Mango</button>
-        <button class="btn btn-sm btn-theme-outline" data-filter="Orange">Orange</button>
-        <button class="btn btn-sm btn-theme-outline" data-filter="Grape">Grapes</button>
-        <button class="btn btn-sm btn-theme-outline" data-filter="Tomato">Tomato</button>
-        <button class="btn btn-sm btn-theme-outline" data-filter="Banana">Banana</button>
+    <!-- Quick Stats Banner -->
+    <div class="gallery-stats-card mb-4">
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+            <div class="d-flex flex-wrap gap-2 align-items-center">
+                <span class="gallery-stat-pill">
+                    <i class="fa-solid fa-camera text-success"></i> {{ total_images_count|default:"39" }} Specimen Photos
+                </span>
+                <span class="gallery-stat-pill">
+                    <i class="fa-solid fa-apple-whole text-danger"></i> 9 Supported Fruit Crops
+                </span>
+                <span class="gallery-stat-pill">
+                    <i class="fa-solid fa-microscope text-primary"></i> 20 Disease &amp; Health Profiles
+                </span>
+            </div>
+            <div>
+                <a href="{% url 'detection:detect' %}" class="btn btn-sm btn-theme-green">
+                    <i class="fa-solid fa-cloud-arrow-up me-1"></i> Scan / Diagnose Specimen
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Controls: Search & Filters -->
+    <div class="bg-white p-3 rounded-3 border shadow-sm mb-4">
+        <!-- Live Search Bar -->
+        <div class="row g-3 align-items-center mb-3">
+            <div class="col-md-6 col-lg-5">
+                <div class="position-relative">
+                    <i class="fa-solid fa-magnifying-glass position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
+                    <input type="text" id="gallerySearchInput" class="form-control gallery-search-input" placeholder="Search by crop, disease name, or symptom...">
+                </div>
+            </div>
+            <!-- Type Filters -->
+            <div class="col-md-6 col-lg-7 d-flex justify-content-md-end gap-2 flex-wrap">
+                <span class="small text-muted align-self-center me-1 d-none d-sm-inline">Filter Type:</span>
+                <button class="btn btn-sm btn-theme-green gallery-filter-btn" data-type="all">All Types</button>
+                <button class="btn btn-sm btn-theme-outline gallery-filter-btn" data-type="healthy">
+                    <i class="fa-solid fa-circle-check text-success me-1"></i> Healthy
+                </button>
+                <button class="btn btn-sm btn-theme-outline gallery-filter-btn" data-type="diseased">
+                    <i class="fa-solid fa-triangle-exclamation text-danger me-1"></i> Diseased
+                </button>
+            </div>
+        </div>
+
+        <hr class="my-2 text-muted opacity-25">
+
+        <!-- Supported Crops Filter Strip (All 9 Crops) -->
+        <div class="d-flex justify-content-start align-items-center gap-1 flex-wrap pt-2">
+            <span class="small fw-semibold text-muted me-2">Crop:</span>
+            <button class="btn btn-sm btn-theme-green gallery-filter-btn crop-filter active" data-crop="all">All Crops</button>
+            <button class="btn btn-sm btn-theme-outline gallery-filter-btn crop-filter" data-crop="Apple">Apple</button>
+            <button class="btn btn-sm btn-theme-outline gallery-filter-btn crop-filter" data-crop="Banana">Banana</button>
+            <button class="btn btn-sm btn-theme-outline gallery-filter-btn crop-filter" data-crop="Grape">Grape</button>
+            <button class="btn btn-sm btn-theme-outline gallery-filter-btn crop-filter" data-crop="Guava">Guava</button>
+            <button class="btn btn-sm btn-theme-outline gallery-filter-btn crop-filter" data-crop="Mango">Mango</button>
+            <button class="btn btn-sm btn-theme-outline gallery-filter-btn crop-filter" data-crop="Orange">Orange</button>
+            <button class="btn btn-sm btn-theme-outline gallery-filter-btn crop-filter" data-crop="Papaya">Papaya</button>
+            <button class="btn btn-sm btn-theme-outline gallery-filter-btn crop-filter" data-crop="Pomegranate">Pomegranate</button>
+            <button class="btn btn-sm btn-theme-outline gallery-filter-btn crop-filter" data-crop="Tomato">Tomato</button>
+        </div>
+    </div>
+
+    <!-- Active Filter Counter -->
+    <div class="d-flex justify-content-between align-items-center mb-3 text-muted small">
+        <span id="galleryCounter">Showing <strong>{{ total_images_count|default:"39" }}</strong> photographic specimens</span>
+        <span class="text-secondary"><i class="fa-solid fa-info-circle me-1"></i>Click any photo to inspect high-resolution details</span>
     </div>
 
     <!-- Gallery Grid -->
     <div class="row g-4" id="galleryGrid">
+        <!-- 1. Canonical Disease & Healthy Profiles (from Database) -->
         {% for d in diseases %}
-            <div class="col-md-4 col-sm-6 gallery-item" data-fruit="{{ d.affected_fruit.fruit_name }}">
-                <div class="card card-agro h-100 shadow-sm border overflow-hidden">
-                    <div class="p-3 text-center bg-light border-bottom">
-                        {% if d.image %}
-                            <img src="{{ d.image.url }}" alt="{{ d.disease_name }}" class="rounded-circle shadow-sm" style="width: 80px; height: 80px; object-fit: cover;">
-                        {% elif d.disease_name == 'Apple Black Rot' %}
-                            <img src="/static/images/gallery/apple_black_rot.png" alt="Apple Black Rot" class="rounded-circle shadow-sm" style="width: 80px; height: 80px; object-fit: cover;">
-                        {% elif d.disease_name == 'Apple Scab' %}
-                            <img src="/static/images/gallery/apple_scab.png" alt="Apple Scab" class="rounded-circle shadow-sm" style="width: 80px; height: 80px; object-fit: cover;">
-                        {% elif d.disease_name == 'Apple Healthy' %}
-                            <img src="/static/images/gallery/apple_healthy.png" alt="Apple Healthy" class="rounded-circle shadow-sm" style="width: 80px; height: 80px; object-fit: cover;">
-                        {% elif d.disease_name == 'Banana Sigatoka' %}
-                            <img src="/static/images/gallery/banana_sigatoka.png" alt="Banana Sigatoka" class="rounded-circle shadow-sm" style="width: 80px; height: 80px; object-fit: cover;">
-                        {% elif d.disease_name == 'Banana Healthy' %}
-                            <img src="/static/images/gallery/banana_healthy.png" alt="Banana Healthy" class="rounded-circle shadow-sm" style="width: 80px; height: 80px; object-fit: cover;">
-                        {% elif d.disease_name == 'Grape Black Rot' %}
-                            <img src="/static/images/gallery/grape_black_rot.png" alt="Grape Black Rot" class="rounded-circle shadow-sm" style="width: 80px; height: 80px; object-fit: cover;">
-                        {% elif d.disease_name == 'Grape Healthy' %}
-                            <img src="/static/images/gallery/grape_healthy.png" alt="Grape Healthy" class="rounded-circle shadow-sm" style="width: 80px; height: 80px; object-fit: cover;">
-                        {% elif d.disease_name == 'Mango Anthracnose' %}
-                            <img src="/static/images/gallery/mango_anthracnose.png" alt="Mango Anthracnose" class="rounded-circle shadow-sm" style="width: 80px; height: 80px; object-fit: cover;">
-                        {% elif d.disease_name == 'Mango Powdery Mildew' %}
-                            <img src="/static/images/gallery/mango_powdery_mildew.png" alt="Mango Powdery Mildew" class="rounded-circle shadow-sm" style="width: 80px; height: 80px; object-fit: cover;">
-                        {% elif d.disease_name == 'Mango Healthy' %}
-                            <img src="/static/images/gallery/mango_healthy.png" alt="Mango Healthy" class="rounded-circle shadow-sm" style="width: 80px; height: 80px; object-fit: cover;">
-                        {% elif d.disease_name == 'Citrus Canker' %}
-                            <img src="/static/images/gallery/citrus_canker.png" alt="Citrus Canker" class="rounded-circle shadow-sm" style="width: 80px; height: 80px; object-fit: cover;">
-                        {% elif d.disease_name == 'Orange Healthy' %}
-                            <img src="/static/images/gallery/orange_healthy.png" alt="Orange Healthy" class="rounded-circle shadow-sm" style="width: 80px; height: 80px; object-fit: cover;">
-                        {% elif d.disease_name == 'Tomato Early Blight' %}
-                            <img src="/static/images/gallery/tomato_early_blight.png" alt="Tomato Early Blight" class="rounded-circle shadow-sm" style="width: 80px; height: 80px; object-fit: cover;">
-                        {% elif d.disease_name == 'Tomato Healthy' %}
-                            <img src="/static/images/gallery/tomato_healthy.png" alt="Tomato Healthy" class="rounded-circle shadow-sm" style="width: 80px; height: 80px; object-fit: cover;">
-                        {% elif d.affected_fruit.fruit_name == 'Apple' %}
-                            <img src="/static/images/gallery/apple_healthy.png" alt="Apple" class="rounded-circle shadow-sm" style="width: 80px; height: 80px; object-fit: cover;">
-                        {% elif d.affected_fruit.fruit_name == 'Mango' %}
-                            <img src="/static/images/gallery/mango_healthy.png" alt="Mango" class="rounded-circle shadow-sm" style="width: 80px; height: 80px; object-fit: cover;">
-                        {% elif d.affected_fruit.fruit_name == 'Orange' %}
-                            <img src="/static/images/gallery/orange_healthy.png" alt="Orange" class="rounded-circle shadow-sm" style="width: 80px; height: 80px; object-fit: cover;">
-                        {% elif d.affected_fruit.fruit_name == 'Grape' %}
-                            <img src="/static/images/gallery/grape_healthy.png" alt="Grapes" class="rounded-circle shadow-sm" style="width: 80px; height: 80px; object-fit: cover;">
-                        {% elif d.affected_fruit.fruit_name == 'Tomato' %}
-                            <img src="/static/images/gallery/tomato_healthy.png" alt="Tomato" class="rounded-circle shadow-sm" style="width: 80px; height: 80px; object-fit: cover;">
-                        {% elif d.affected_fruit.fruit_name == 'Banana' %}
-                            <img src="/static/images/gallery/banana_healthy.png" alt="Banana" class="rounded-circle shadow-sm" style="width: 80px; height: 80px; object-fit: cover;">
+            <div class="col-lg-4 col-md-6 col-sm-6 gallery-item" 
+                 data-fruit="{{ d.affected_fruit.fruit_name }}"
+                 data-status="{% if d.is_healthy %}healthy{% else %}diseased{% endif %}"
+                 data-keywords="{{ d.disease_name|lower }} {{ d.affected_fruit.fruit_name|lower }} {{ d.pathogen_name|lower }} {{ d.description|lower }}">
+                <div class="gallery-card shadow-sm">
+                    <!-- Image Wrapper -->
+                    <div class="gallery-img-wrapper">
+                        <span class="badge-crop">{{ d.affected_fruit.fruit_name }}</span>
+                        {% if d.is_healthy %}
+                            <span class="badge-status badge-status-healthy">
+                                <i class="fa-solid fa-circle-check me-1"></i>Healthy
+                            </span>
                         {% else %}
-                            <img src="/static/images/hero-fruits.jpg" alt="Fruit" class="rounded-circle shadow-sm" style="width: 80px; height: 80px; object-fit: cover;">
+                            <span class="badge-status badge-status-diseased">
+                                <i class="fa-solid fa-triangle-exclamation me-1"></i>Diseased
+                            </span>
                         {% endif %}
-                    </div>
-                    <div class="card-body p-3">
-                        <div class="d-flex justify-content-between align-items-start mb-2">
-                            <span class="badge bg-light text-dark border small">{{ d.affected_fruit.fruit_name }}</span>
-                            {% if d.is_healthy %}
-                                <span class="badge bg-success small">Healthy</span>
-                            {% else %}
-                                <span class="badge bg-danger small">Diseased</span>
-                            {% endif %}
+                        <img src="{{ d.gallery_image_url }}" alt="{{ d.disease_name }}" class="gallery-img" loading="lazy">
+                        <div class="gallery-img-overlay">
+                            <button type="button" class="btn btn-quick-view" 
+                                    data-bs-toggle="modal" 
+                                    data-bs-target="#specimenModal"
+                                    data-title="{{ d.disease_name }}"
+                                    data-fruit="{{ d.affected_fruit.fruit_name }}"
+                                    data-status="{% if d.is_healthy %}Healthy{% else %}Diseased{% endif %}"
+                                    data-img="{{ d.gallery_image_url }}"
+                                    data-pathogen="{{ d.pathogen_name|default:'Healthy vegetative tissue' }}"
+                                    data-desc="{{ d.description }}">
+                                <i class="fa-solid fa-magnifying-glass-plus me-1"></i>Quick View
+                            </button>
                         </div>
-                        <h6 class="fw-bold text-dark mb-1">{{ d.disease_name }}</h6>
-                        <p class="small text-muted mb-2 fst-italic">{{ d.pathogen_name|default:"Normal tissue" }}</p>
-                        <p class="small text-secondary mb-3">{{ d.description|truncatewords:14 }}</p>
-                        <div class="d-flex justify-content-between align-items-center">
-                            <a href="{% url 'diseases:disease_detail' d.pk %}" class="btn btn-sm btn-outline-success">View Profile</a>
-                            <a href="{% url 'detection:detect' %}" class="btn btn-sm btn-theme-green">Scan Image</a>
+                    </div>
+
+                    <!-- Card Body -->
+                    <div class="p-3 d-flex flex-column flex-grow-1">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <h6 class="fw-bold text-dark mb-0 text-truncate" title="{{ d.disease_name }}">
+                                {{ d.disease_name }}
+                            </h6>
+                            <span class="badge bg-light text-secondary border small">{{ d.get_severity_display|default:"Moderate" }}</span>
+                        </div>
+                        <p class="small text-muted mb-2 fst-italic text-truncate" title="{{ d.pathogen_name|default:'Non-pathogenic' }}">
+                            {{ d.pathogen_name|default:"Non-pathogenic / Natural specimen" }}
+                        </p>
+                        <p class="small text-secondary mb-3 flex-grow-1" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+                            {{ d.description }}
+                        </p>
+                        <div class="d-flex justify-content-between align-items-center pt-2 border-top">
+                            <a href="{% url 'diseases:disease_detail' d.pk %}" class="btn btn-sm btn-outline-success">
+                                <i class="fa-solid fa-book-open me-1"></i>View Profile
+                            </a>
+                            <a href="{% url 'detection:detect' %}" class="btn btn-sm btn-theme-green">
+                                <i class="fa-solid fa-camera me-1"></i>Scan Specimen
+                            </a>
                         </div>
                     </div>
                 </div>
             </div>
         {% endfor %}
+
+        <!-- 2. Additional Real Field Specimens & Cultivar Photos -->
+        {% for s in additional_specimens %}
+            <div class="col-lg-4 col-md-6 col-sm-6 gallery-item" 
+                 data-fruit="{{ s.fruit }}"
+                 data-status="{% if s.is_healthy %}healthy{% else %}diseased{% endif %}"
+                 data-keywords="{{ s.title|lower }} {{ s.fruit|lower }} {{ s.tag|lower }} {{ s.description|lower }}">
+                <div class="gallery-card shadow-sm">
+                    <!-- Image Wrapper -->
+                    <div class="gallery-img-wrapper">
+                        <span class="badge-crop">{{ s.fruit }}</span>
+                        {% if s.is_healthy %}
+                            <span class="badge-status badge-status-healthy">
+                                <i class="fa-solid fa-circle-check me-1"></i>Healthy
+                            </span>
+                        {% else %}
+                            <span class="badge-status badge-status-diseased">
+                                <i class="fa-solid fa-triangle-exclamation me-1"></i>Diseased
+                            </span>
+                        {% endif %}
+                        <img src="{{ s.image }}" alt="{{ s.title }}" class="gallery-img" loading="lazy">
+                        <div class="gallery-img-overlay">
+                            <button type="button" class="btn btn-quick-view" 
+                                    data-bs-toggle="modal" 
+                                    data-bs-target="#specimenModal"
+                                    data-title="{{ s.title }}"
+                                    data-fruit="{{ s.fruit }}"
+                                    data-status="{% if s.is_healthy %}Healthy{% else %}Diseased{% endif %}"
+                                    data-img="{{ s.image }}"
+                                    data-pathogen="{{ s.tag }}"
+                                    data-desc="{{ s.description }}">
+                                <i class="fa-solid fa-magnifying-glass-plus me-1"></i>Quick View
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Card Body -->
+                    <div class="p-3 d-flex flex-column flex-grow-1">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <h6 class="fw-bold text-dark mb-0 text-truncate" title="{{ s.title }}">
+                                {{ s.title }}
+                            </h6>
+                            <span class="badge bg-light text-secondary border small">{{ s.tag }}</span>
+                        </div>
+                        <p class="small text-muted mb-2 fst-italic text-truncate" title="{{ s.tag }}">
+                            Field Photographic Specimen &bull; {{ s.fruit }}
+                        </p>
+                        <p class="small text-secondary mb-3 flex-grow-1" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+                            {{ s.description }}
+                        </p>
+                        <div class="d-flex justify-content-between align-items-center pt-2 border-top">
+                            <button type="button" class="btn btn-sm btn-outline-secondary" 
+                                    data-bs-toggle="modal" 
+                                    data-bs-target="#specimenModal"
+                                    data-title="{{ s.title }}"
+                                    data-fruit="{{ s.fruit }}"
+                                    data-status="{% if s.is_healthy %}Healthy{% else %}Diseased{% endif %}"
+                                    data-img="{{ s.image }}"
+                                    data-pathogen="{{ s.tag }}"
+                                    data-desc="{{ s.description }}">
+                                <i class="fa-solid fa-eye me-1"></i>Full Preview
+                            </button>
+                            <a href="{% url 'detection:detect' %}" class="btn btn-sm btn-theme-green">
+                                <i class="fa-solid fa-camera me-1"></i>Test Specimen
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <!-- Empty State (When no filter matches) -->
+    <div id="galleryEmptyState" class="text-center py-5 d-none">
+        <div class="p-4 bg-light rounded-3 d-inline-block border">
+            <i class="fa-solid fa-image text-muted display-4 mb-3 d-block"></i>
+            <h5 class="fw-bold text-dark mb-2">No Specimen Photos Found</h5>
+            <p class="text-secondary small mb-3">Try clearing search filters or selecting "All Crops" to view the full gallery.</p>
+            <button class="btn btn-sm btn-theme-green" id="btnResetFilters">
+                <i class="fa-solid fa-rotate-left me-1"></i>Reset All Filters
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Interactive Specimen Lightbox Modal -->
+<div class="modal fade" id="specimenModal" tabindex="-1" aria-labelledby="specimenModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+            <div class="modal-header bg-light border-bottom py-3">
+                <div class="d-flex align-items-center gap-2">
+                    <span id="modalCropBadge" class="badge bg-dark">Fruit</span>
+                    <span id="modalStatusBadge" class="badge bg-success">Status</span>
+                    <h5 class="modal-title fw-bold text-dark mb-0" id="specimenModalLabel">Specimen Detail</h5>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-0">
+                <div class="row g-0">
+                    <div class="col-md-7 bg-black text-center d-flex align-items-center justify-content-center p-3" style="min-height: 380px;">
+                        <img id="modalImg" src="" alt="Specimen Specimen" class="img-fluid rounded-2" style="max-height: 420px; object-fit: contain;">
+                    </div>
+                    <div class="col-md-5 p-4 d-flex flex-column justify-content-between bg-white">
+                        <div>
+                            <h5 id="modalTitle" class="fw-bold text-dark mb-2">Specimen Title</h5>
+                            <div class="small text-muted mb-3">
+                                <strong>Classification:</strong> <span id="modalPathogen">Pathogen</span>
+                            </div>
+                            <hr class="my-2">
+                            <h6 class="small fw-bold text-secondary mb-1">Botanical Observations:</h6>
+                            <p id="modalDesc" class="text-secondary small leading-relaxed mb-3">
+                                Detailed specimen description.
+                            </p>
+                        </div>
+                        <div class="pt-3 border-top d-grid gap-2">
+                            <a href="{% url 'detection:detect' %}" class="btn btn-theme-green btn-sm">
+                                <i class="fa-solid fa-cloud-arrow-up me-1"></i>Test Specimen in Detector
+                            </a>
+                            <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">
+                                Close Preview
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}
@@ -102,28 +417,141 @@
 {% block extra_scripts %}
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    const filterButtons = document.querySelectorAll('[data-filter]');
+    const searchInput = document.getElementById('gallerySearchInput');
+    const cropButtons = document.querySelectorAll('.crop-filter');
+    const typeButtons = document.querySelectorAll('[data-type]');
     const galleryItems = document.querySelectorAll('.gallery-item');
+    const counterEl = document.getElementById('galleryCounter');
+    const emptyState = document.getElementById('galleryEmptyState');
+    const resetBtn = document.getElementById('btnResetFilters');
 
-    filterButtons.forEach(btn => {
+    let activeCrop = 'all';
+    let activeType = 'all';
+    let searchQuery = '';
+
+    function filterGallery() {
+        let visibleCount = 0;
+
+        galleryItems.forEach(item => {
+            const itemCrop = item.getAttribute('data-fruit');
+            const itemStatus = item.getAttribute('data-status');
+            const itemKeywords = (item.getAttribute('data-keywords') || '').toLowerCase();
+
+            const matchesCrop = (activeCrop === 'all' || itemCrop.toLowerCase() === activeCrop.toLowerCase());
+            const matchesType = (activeType === 'all' || itemStatus === activeType);
+            const matchesSearch = (!searchQuery || itemKeywords.includes(searchQuery));
+
+            if (matchesCrop && matchesType && matchesSearch) {
+                item.style.display = 'block';
+                visibleCount++;
+            } else {
+                item.style.display = 'none';
+            }
+        });
+
+        if (counterEl) {
+            counterEl.innerHTML = `Showing <strong>${visibleCount}</strong> of <strong>${galleryItems.length}</strong> photographic specimens`;
+        }
+
+        if (emptyState) {
+            if (visibleCount === 0) {
+                emptyState.classList.remove('d-none');
+            } else {
+                emptyState.classList.add('d-none');
+            }
+        }
+    }
+
+    // Crop Filter Buttons
+    cropButtons.forEach(btn => {
         btn.addEventListener('click', function () {
-            filterButtons.forEach(b => {
+            cropButtons.forEach(b => {
+                b.classList.remove('btn-theme-green', 'active');
+                b.classList.add('btn-theme-outline');
+            });
+            this.classList.remove('btn-theme-outline');
+            this.classList.add('btn-theme-green', 'active');
+            activeCrop = this.getAttribute('data-crop');
+            filterGallery();
+        });
+    });
+
+    // Type Filter Buttons (Healthy / Diseased)
+    typeButtons.forEach(btn => {
+        btn.addEventListener('click', function () {
+            typeButtons.forEach(b => {
                 b.classList.remove('btn-theme-green');
                 b.classList.add('btn-theme-outline');
             });
             this.classList.remove('btn-theme-outline');
             this.classList.add('btn-theme-green');
-
-            const filterValue = this.getAttribute('data-filter');
-            galleryItems.forEach(item => {
-                if (filterValue === 'all' || item.getAttribute('data-fruit') === filterValue) {
-                    item.style.display = 'block';
-                } else {
-                    item.style.display = 'none';
-                }
-            });
+            activeType = this.getAttribute('data-type');
+            filterGallery();
         });
     });
+
+    // Search Input
+    if (searchInput) {
+        searchInput.addEventListener('input', function () {
+            searchQuery = this.value.trim().toLowerCase();
+            filterGallery();
+        });
+    }
+
+    // Reset Button
+    if (resetBtn) {
+        resetBtn.addEventListener('click', function () {
+            activeCrop = 'all';
+            activeType = 'all';
+            searchQuery = '';
+            if (searchInput) searchInput.value = '';
+
+            cropButtons.forEach(b => {
+                b.classList.remove('btn-theme-green', 'active');
+                b.classList.add('btn-theme-outline');
+            });
+            document.querySelector('.crop-filter[data-crop="all"]').classList.add('btn-theme-green', 'active');
+
+            typeButtons.forEach(b => {
+                b.classList.remove('btn-theme-green');
+                b.classList.add('btn-theme-outline');
+            });
+            document.querySelector('[data-type="all"]').classList.add('btn-theme-green');
+
+            filterGallery();
+        });
+    }
+
+    // Modal Lightbox Event Handler
+    const specimenModal = document.getElementById('specimenModal');
+    if (specimenModal) {
+        specimenModal.addEventListener('show.bs.modal', function (event) {
+            const button = event.relatedTarget;
+            if (!button) return;
+
+            const title = button.getAttribute('data-title') || 'Specimen';
+            const fruit = button.getAttribute('data-fruit') || 'Fruit';
+            const status = button.getAttribute('data-status') || 'Healthy';
+            const img = button.getAttribute('data-img') || '';
+            const pathogen = button.getAttribute('data-pathogen') || 'None';
+            const desc = button.getAttribute('data-desc') || '';
+
+            document.getElementById('modalTitle').textContent = title;
+            document.getElementById('modalCropBadge').textContent = fruit;
+            
+            const statusBadge = document.getElementById('modalStatusBadge');
+            statusBadge.textContent = status;
+            if (status.toLowerCase() === 'healthy') {
+                statusBadge.className = 'badge bg-success';
+            } else {
+                statusBadge.className = 'badge bg-danger';
+            }
+
+            document.getElementById('modalImg').src = img;
+            document.getElementById('modalPathogen').textContent = pathogen;
+            document.getElementById('modalDesc').textContent = desc;
+        });
+    }
 });
 </script>
 {% endblock %}

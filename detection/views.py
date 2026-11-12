@@ -52,11 +52,207 @@ class ContactView(View):
         return render(request, 'contact.html', {'success': True})
 
 
+DISEASE_IMAGE_MAP = {
+    'Apple Black Rot': '/static/images/gallery/apple_black_rot.png',
+    'Apple Scab': '/static/images/gallery/apple_scab.png',
+    'Apple Healthy': '/static/images/gallery/apple_healthy.png',
+    'Banana Sigatoka': '/static/images/gallery/banana_sigatoka.png',
+    'Banana Healthy': '/static/images/gallery/banana_healthy.png',
+    'Grape Black Rot': '/static/images/gallery/grape_black_rot.png',
+    'Grape Healthy': '/static/images/gallery/grape_healthy.png',
+    'Mango Anthracnose': '/static/images/gallery/mango_anthracnose.png',
+    'Mango Powdery Mildew': '/static/images/gallery/mango_powdery_mildew.png',
+    'Mango Healthy': '/static/images/gallery/mango_healthy.png',
+    'Citrus Canker': '/static/images/gallery/citrus_canker.png',
+    'Orange Healthy': '/static/images/gallery/orange_healthy.png',
+    'Tomato Early Blight': '/static/images/gallery/tomato_early_blight.png',
+    'Tomato Healthy': '/static/images/gallery/tomato_healthy.png',
+    'Guava Healthy': '/static/images/gallery/guava_healthy.png',
+    'Guava Wilt': '/static/images/gallery/guava_wilt.png',
+    'Papaya Healthy': '/static/images/gallery/papaya_healthy.png',
+    'Papaya Ringspot': '/static/images/gallery/papaya_ringspot.png',
+    'Pomegranate Healthy': '/static/images/gallery/pomegranate_healthy.png',
+    'Pomegranate Bacterial Blight': '/static/images/gallery/pomegranate_bacterial_blight.png',
+}
+
+ADDITIONAL_SPECIMENS = [
+    {
+        'title': 'Green Apple Variety (Granny Smith)',
+        'fruit': 'Apple',
+        'is_healthy': True,
+        'image': '/static/images/gallery/apple_green_healthy.png',
+        'tag': 'Cultivar Specimen',
+        'description': 'Crisp emerald green apple with uniform glossy skin and zero foliar or fruit blemish.'
+    },
+    {
+        'title': 'Red Apple Cluster on Branch',
+        'fruit': 'Apple',
+        'is_healthy': True,
+        'image': '/static/images/gallery/apple_red_cluster.png',
+        'tag': 'Orchard Cluster',
+        'description': 'Sun-ripened red apple cluster growing in temperate orchard showing optimal healthy maturity.'
+    },
+    {
+        'title': 'Red Gala Harvest Apple',
+        'fruit': 'Apple',
+        'is_healthy': True,
+        'image': '/static/images/gallery/apple_red_crisp.png',
+        'tag': 'Market Grade',
+        'description': 'Grade-A red apple specimen with natural wax bloom and clean stem cavity.'
+    },
+    {
+        'title': 'Field Banana Bunch on Plantation Tree',
+        'fruit': 'Banana',
+        'is_healthy': True,
+        'image': '/static/images/gallery/banana_field_bunch.png',
+        'tag': 'Plantation Specimen',
+        'description': 'Full healthy green banana bunch hanging from pseudo-stem under tropical canopy.'
+    },
+    {
+        'title': 'Naturally Ripened Spotted Banana',
+        'fruit': 'Banana',
+        'is_healthy': True,
+        'image': '/static/images/gallery/banana_ripe_spotted.png',
+        'tag': 'Ripening Stage',
+        'description': 'Natural physiological sugar spotting during maturation, distinct from fungal Sigatoka lesions.'
+    },
+    {
+        'title': 'Commercial Yellow Banana Finger',
+        'fruit': 'Banana',
+        'is_healthy': True,
+        'image': '/static/images/gallery/banana_market_specimen.png',
+        'tag': 'Market Grade',
+        'description': 'Unblemished yellow Cavendish banana specimen with uniform yellow peel.'
+    },
+    {
+        'title': 'Single Curved Table Banana',
+        'fruit': 'Banana',
+        'is_healthy': True,
+        'image': '/static/images/gallery/banana_single_curved.png',
+        'tag': 'Morphological Standard',
+        'description': 'Typical elongated single curved body used in geometric contour verification.'
+    },
+    {
+        'title': 'Green Table Grape Cluster',
+        'fruit': 'Grape',
+        'is_healthy': True,
+        'image': '/static/images/gallery/grape_green_cluster.png',
+        'tag': 'Vineyard Specimen',
+        'description': 'Tight cluster of translucent green Thompson seedless berries with crisp intact skin.'
+    },
+    {
+        'title': 'Ripe Purple Grape Bunch',
+        'fruit': 'Grape',
+        'is_healthy': True,
+        'image': '/static/images/gallery/grape_purple_healthy.png',
+        'tag': 'Vineyard Harvest',
+        'description': 'Lush dark purple grape berries coated in natural protective yeast bloom.'
+    },
+    {
+        'title': 'Fresh Table Grape Specimen',
+        'fruit': 'Grape',
+        'is_healthy': True,
+        'image': '/static/images/gallery/grape_table_variety.png',
+        'tag': 'Market Grade',
+        'description': 'Healthy bunch of plump table grapes free from mildew, botrytis, or black rot.'
+    },
+    {
+        'title': 'Raw Green Mango Specimen',
+        'fruit': 'Mango',
+        'is_healthy': True,
+        'image': '/static/images/gallery/mango_raw_healthy.png',
+        'tag': 'Unripe Specimen',
+        'description': 'Developing raw green mango with firm pericarp, free from anthracnose tear-stains.'
+    },
+    {
+        'title': 'Tree-Ripened Golden Mango',
+        'fruit': 'Mango',
+        'is_healthy': True,
+        'image': '/static/images/gallery/mango_ripe_specimen.png',
+        'tag': 'Ripe Specimen',
+        'description': 'Fully ripe golden Alphonso/Kesar mango exhibiting vibrant orange-yellow hue.'
+    },
+    {
+        'title': 'Citrus Orchard Tree & Foliage',
+        'fruit': 'Orange',
+        'is_healthy': True,
+        'image': '/static/images/gallery/orange_orchard_tree.png',
+        'tag': 'Orchard Canopy',
+        'description': 'Vigorous citrus tree bearing multiple healthy oranges with dark glossy foliage.'
+    },
+    {
+        'title': 'Ripe Sweet Citrus Orange',
+        'fruit': 'Orange',
+        'is_healthy': True,
+        'image': '/static/images/gallery/orange_citrus_ripe.png',
+        'tag': 'Market Grade',
+        'description': 'Golden-orange citrus specimen with smooth oil glands and zero bacterial canker halos.'
+    },
+    {
+        'title': 'Single Navel Orange Specimen',
+        'fruit': 'Orange',
+        'is_healthy': True,
+        'image': '/static/images/gallery/orange_navel_single.png',
+        'tag': 'Harvest Grade',
+        'description': 'Hand-picked navel orange with intact calyx button and vibrant rind.'
+    },
+    {
+        'title': 'Fresh Tomatoes Ripening on Vine',
+        'fruit': 'Tomato',
+        'is_healthy': True,
+        'image': '/static/images/gallery/tomato_vine_fresh.png',
+        'tag': 'Greenhouse Specimen',
+        'description': 'Vibrant truss of cluster tomatoes on healthy green calyx and vine.'
+    },
+    {
+        'title': 'Field Harvest Salad Tomato',
+        'fruit': 'Tomato',
+        'is_healthy': True,
+        'image': '/static/images/gallery/tomato_field_harvest.png',
+        'tag': 'Field Specimen',
+        'description': 'Plump red salad tomato showing uniform lycopene coloration and clean epidermis.'
+    },
+    {
+        'title': 'Single Round Tomato Specimen',
+        'fruit': 'Tomato',
+        'is_healthy': True,
+        'image': '/static/images/gallery/tomato_salad_round.png',
+        'tag': 'Market Grade',
+        'description': 'Firm greenhouse-grown round tomato with smooth skin and no blight lesions.'
+    },
+    {
+        'title': 'Foliar Necrotic Leaf Spot Pathology',
+        'fruit': 'Tomato',
+        'is_healthy': False,
+        'image': '/static/images/gallery/foliar_disease_leaf_spot.png',
+        'tag': 'Pathological Marker',
+        'description': 'Characteristic foliar necrotic leaf spots displaying concentric fungal rings and yellow halos.'
+    },
+]
+
+
 class GalleryView(View):
     def get(self, request):
         fruits = Fruit.objects.all().prefetch_related('diseases')
-        diseases = Disease.objects.all().select_related('affected_fruit')
-        return render(request, 'gallery.html', {'fruits': fruits, 'diseases': diseases})
+        diseases = list(Disease.objects.all().select_related('affected_fruit'))
+        for d in diseases:
+            if d.image:
+                d.gallery_image_url = d.image.url
+            else:
+                d.gallery_image_url = DISEASE_IMAGE_MAP.get(
+                    d.disease_name,
+                    '/static/images/hero-fruits.jpg'
+                )
+
+        total_images_count = len(diseases) + len(ADDITIONAL_SPECIMENS)
+
+        context = {
+            'fruits': fruits,
+            'diseases': diseases,
+            'additional_specimens': ADDITIONAL_SPECIMENS,
+            'total_images_count': total_images_count,
+        }
+        return render(request, 'gallery.html', context)
 
 
 @method_decorator(login_required, name='dispatch')
